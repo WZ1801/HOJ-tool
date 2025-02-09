@@ -1,0 +1,160 @@
+{
+    "OJ": {
+        "URL": "http://82.156.246.133",
+        "username": "24CSP118",
+        "password": "1801a1b2c3"
+    },
+    "AI_cookies": [
+        {
+            "domain": "bot.n.cn",
+            "expiry": 1772024195,
+            "httpOnly": false,
+            "name": "__DC_gid",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "25170478.143571528.1737464116993.1737464195182.3"
+        },
+        {
+            "domain": "bot.n.cn",
+            "httpOnly": false,
+            "name": "test_cookie_enable",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "null"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1772024195,
+            "httpOnly": false,
+            "name": "_ga_BCGTJC5JR6",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "GS1.1.1737464119.1.1.1737464195.51.0.0"
+        },
+        {
+            "domain": ".bot.n.cn",
+            "expiry": 1742648118,
+            "httpOnly": true,
+            "name": "Auth-Token",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": true,
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtaWQiOiIyNTE3MDQ3ODE1NzcxMjE5OTc2MzA1OTUwMDAxNzM3NCIsInFpZCI6IiIsImRldGFpbCI6IjQwMSIsImV4cCI6MTczODA2ODk1MH0.W27tYQc1HKIyPVkfsZuSbrd7ILJCTOFVJ9-7bQbO-C8"
+        },
+        {
+            "domain": "bot.n.cn",
+            "expiry": 1737550594,
+            "httpOnly": false,
+            "name": "__DC_monitor_count",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "3"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1769000191,
+            "httpOnly": true,
+            "name": "T",
+            "path": "/",
+            "sameSite": "None",
+            "secure": true,
+            "value": "s%3D9439a4cfddb16cf76f1f65758d3f2de6%26t%3D1737464223%26lm%3D%26lf%3D2%26sk%3Dbd88c9974e6f13aeb0cd827866a20fe9%26mt%3D1737464223%26rc%3D%26v%3D2.0%26a%3D1"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1772024195,
+            "httpOnly": false,
+            "name": "_ga_F1YB4HZHRB",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "GS1.1.1737464119.1.1.1737464195.51.0.2110781861"
+        },
+        {
+            "domain": "bot.n.cn",
+            "expiry": 1737478523,
+            "httpOnly": false,
+            "name": "__quc_silent__",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "1"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1769000191,
+            "httpOnly": false,
+            "name": "Q",
+            "path": "/",
+            "sameSite": "None",
+            "secure": true,
+            "value": "u%3D360H3463311031%26n%3D%26le%3D%26m%3DZGH3WGWOWGWOWGWOWGWOWGWOAwL0%26qid%3D3463311031%26im%3D1_t01923d359dad425928%26src%3Dpcw_aizhushou%26t%3D1"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1772024195,
+            "httpOnly": false,
+            "name": "_ga",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "GA1.1.2116121733.1737464119"
+        },
+        {
+            "domain": ".bot.n.cn",
+            "expiry": 1769000118,
+            "httpOnly": true,
+            "name": "sdt",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": true,
+            "value": "05c30377-7cf8-48e0-b6d6-4e3f3caa740e"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1763384117,
+            "httpOnly": false,
+            "name": "__guid",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "25170478.4141762615167353300.1737464117227.0618"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1769000191,
+            "httpOnly": true,
+            "name": "__NS_T",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "s%3D9439a4cfddb16cf76f1f65758d3f2de6%26t%3D1737464223%26lm%3D%26lf%3D2%26sk%3Dbd88c9974e6f13aeb0cd827866a20fe9%26mt%3D1737464223%26rc%3D%26v%3D2.0%26a%3D1"
+        },
+        {
+            "domain": ".n.cn",
+            "expiry": 1769000191,
+            "httpOnly": false,
+            "name": "__NS_Q",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "u%3D360H3463311031%26n%3D%26le%3D%26m%3DZGH3WGWOWGWOWGWOWGWOWGWOAwL0%26qid%3D3463311031%26im%3D1_t01923d359dad425928%26src%3Dpcw_aizhushou%26t%3D1"
+        },
+        {
+            "domain": "bot.n.cn",
+            "expiry": 1737465995,
+            "httpOnly": false,
+            "name": "__DC_sid",
+            "path": "/",
+            "sameSite": "Lax",
+            "secure": false,
+            "value": "25170478.2108440440087421200.1737464116982.125"
+        }
+    ],
+    "AI_URL": "https://bot.n.cn/chat/62acf0a2e0a341a1b08f04aaaa857249",
+    "ChromeDriver_path": "chromedriver.exe"
+}
