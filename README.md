@@ -3,11 +3,11 @@
 #### 介绍
 利用AI（ 360bot ）对HOJ类OJ的自动爬虫刷题系统，适配于 $Windows$
 
-#### 安装教程
+#### 安装教程 
 
-1.  克隆仓库至本地
+1.  克隆仓库至本地 (下载EXE的忽略)
 2.  安装谷歌浏览器和对应的爬虫驱动（ chromedriver ）: [下载地址1](https://googlechromelabs.github.io/chrome-for-testing/)、[下载地址2](http://chromedriver.storage.googleapis.com/index.html)
-3.  安装 Python 第三方库（ 运行 install_packages.bat ）
+3.  安装 Python 第三方库（ 运行 install_packages.bat ） (下载EXE的忽略)
 
 #### 使用说明
 
