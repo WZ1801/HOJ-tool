@@ -8,15 +8,12 @@
 1.  克隆仓库至本地
 2.  安装谷歌浏览器和对应的爬虫驱动（ chromedriver ）: [下载地址1](https://googlechromelabs.github.io/chrome-for-testing/)、[下载地址2](http://chromedriver.storage.googleapis.com/index.html)
 3.  安装 Python 第三方库（ 运行 install_packages.bat ）
-4.  手动替换 main.py 中的 example.oj 为自己的 oj
 
 #### 使用说明
 
 1.  打开 main.py
-2.  写入配置（按照提示操作，之前配置过会保存）
-3.  开始刷训练题（按照提示操作）
-
-⚠️本版本与之前版本配置路径不同，需重新配置
+2.  配置信息（按照提示操作，之前配置过会保存）
+3.  开始刷题（按照提示操作，可刷训练，可刷个题）
 
 #### 参与贡献
 
