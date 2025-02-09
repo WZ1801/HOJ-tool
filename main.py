@@ -96,7 +96,7 @@ def training_code():
     #OJ
     username = user_data['OJ']['username']
     password = user_data['OJ']['password']
-    driver.get("http://82.156.246.133/home")
+    driver.get("http://example.oj/home")
     driver.maximize_window()
     driver.implicitly_wait(10)
     find_boby = driver.find_element(By.XPATH,  "//button[@class='el-button el-button--primary el-button--medium is-round']")
@@ -119,7 +119,7 @@ def training_code():
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
     
     #获取题目id
-    driver.get("http://82.156.246.133/training/" + str(training_num))
+    driver.get("http://example.oj/training/" + str(training_num))
     find_boby = driver.find_element(By.XPATH, "/html/body/div[1]/div/div[2]/div/div[2]/div/div[1]/div/div/div/div[3]")
     find_boby.click()
     question_ID = []
@@ -145,7 +145,7 @@ def training_code():
 
     #开始刷题
     for i in question_ID:
-        problem = requests.get(url = 'http://82.156.246.133/api/get-problem-detail?problemId=' + i, headers = {'User-Agent': 'Mozilla/7.0 (Windows NT 13.0; Win256; x256) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/514.0.0.0 Safari/987.36'})
+        problem = requests.get(url = 'http://example.oj/api/get-problem-detail?problemId=' + i, headers = {'User-Agent': 'Mozilla/7.0 (Windows NT 13.0; Win256; x256) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/514.0.0.0 Safari/987.36'})
         problem = problem.json()
         problem = problem['data']['problem']
         problem = str('请编写可运行完整程序:' + problem['description'] + '输入:' + problem['input'] + '输出:' + problem['output']).replace("\n",  "").replace("\r", "").replace("<code>", "").replace("</code>", "").replace("<input>", "").replace("</input>", "").replace("<output>", "").replace("</output>", "").replace("\\", "") + str(example_conversion_format(problem['examples']) + '。'  + '帮我编写c++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间。')
@@ -192,7 +192,7 @@ def training_code():
             'tid': None
         }
         # print(dumps(headers) + '\n' + dumps(data))
-        response = requests.post(url='http://82.156.246.133/api/submit-problem-judge', headers=headers, data=dumps(data))
+        response = requests.post(url='http://example.oj/api/submit-problem-judge', headers=headers, data=dumps(data))
         if response.status_code != 200:
             print('提交请求异常,status:' + str(response.status_code))
             driver.quit()
