@@ -224,7 +224,7 @@ def training_code() -> None:
             sleep(10)
             if not is_page_stable(driver):
                 print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
-                driver.refresh()
+                driver.refresh
                 continue
             #复制
             copy_code(driver = driver, AI_URL = AI_URL)
