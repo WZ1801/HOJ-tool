@@ -1,3 +1,9 @@
+#my user data
+user_data.json
+
+#ASC certificate
+*.ASC
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -31,6 +37,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+*.exe
 
 # Installer logs
 pip-log.txt
