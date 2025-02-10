@@ -103,26 +103,6 @@ def add_driver_cookie(driver: webdriver.Chrome, website: str, cookies: list) -> 
     except Exception as e:
         print(Fore.RED + f"添加cookie时错误:{str(e)}" + Style.RESET_ALL)
 
-#配置AI
-def configure_AI(driver: webdriver.Chrome, AI_URL: str) -> None:
-    '''
-    配置AI
-    '''
-    driver.get(AI_URL)
-    driver.find_element(By.XPATH,  "/html/body/div[1]/div/div[1]/div/div[2]/div[1]/div[2]/section/div[1]/div/div/div[1]/span").click()
-    sleep(0.1)
-    # kimi
-    driver.find_element(By.XPATH,  "/html/body/div[1]/div/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div/div/div/div[1]/div[3]/div[5]").click()
-    sleep(0.1)
-    driver.find_element(By.XPATH,  "/html/body/div[1]/div/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div/div/div/div[2]/div/div/div/div[3]").click()
-    sleep(1)
-    
-    # d1eepseek R1  用时太长舍去
-    # driver.find_element(By.XPATH, '//*[@id="nworld-app-modal-container"]/div/div[2]/div/div[2]/div/div/div[1]/div/div/div/div[1]/div[3]/div[2]/span').click()
-    # sleep(0.2)
-    # driver.find_element(By.XPATH, '//*[@id="model_list_wrap_modal"]/div/div/div[1]').click()
-    # sleep(1)
-
 #获取题目+AI话术
 def get_problem_saying(pid: str, notes: str) -> str:
     global user_data
@@ -180,7 +160,6 @@ def copy_code(driver: webdriver.Chrome, AI_URL: str) -> None:
                 try:
                     driver.refresh()
                     driver.implicitly_wait(10)
-                    configure_AI(driver = driver, AI_URL = AI_URL)
                 except Exception as e:
                     print(Fore.RED + '配置AI时出错:' + str(e) + Style.RESET_ALL)
 
@@ -227,7 +206,7 @@ def training_code() -> None:
             for label in labels:
                 question_ID.append(label.text)
 
-        configure_AI(driver, AI_URL)
+        driver.get(AI_URL)
 
         #开始刷题
         for i in question_ID:
@@ -245,6 +224,7 @@ def training_code() -> None:
             sleep(10)
             if not is_page_stable(driver):
                 print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
+                driver.refresh()
                 continue
             #复制
             copy_code(driver = driver, AI_URL = AI_URL)
@@ -307,7 +287,7 @@ def problem_code() -> None:
     #AI
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
 
-    configure_AI(driver, AI_URL)
+    driver.get(AI_URL)
 
     for pid in pids.split(','):
         try:
@@ -324,6 +304,7 @@ def problem_code() -> None:
         sleep(10)
         if not is_page_stable(driver):
             print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
+            driver.refresh()
             continue
         #复制
         copy_code(driver = driver, AI_URL = AI_URL)
