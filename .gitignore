@@ -1,5 +1,9 @@
+#test
+test.*
+
 #my user data
 user_data.json
+user_data copy.json
 
 #ASC certificate
 *.ASC
