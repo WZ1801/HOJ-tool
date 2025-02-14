@@ -1,3 +1,4 @@
+#coding=utf-8
 from time import time, sleep
 
 Start_time = time()
@@ -64,6 +65,14 @@ def example_conversion_format(examples: str) -> str:
 
 # 等待页面上没有任何元素变化
 def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 3, interval: float = 1.5) -> bool:
+    """
+    等待页面上没有任何元素变化
+
+    :param driver: Selenium WebDriver实例
+    :param timeout: 超时时间（秒）
+    :param interval: 检查间隔（秒）
+    :return: 如果页面在指定时间内稳定，则返回True，否则返回False
+    """
     start_time = time()
     while time() - start_time < timeout:
         current_hash = _get_page_hash(driver)
@@ -74,11 +83,24 @@ def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 3, interval: fl
     return current_hash == _get_page_hash(driver)
 
 def _get_page_hash(driver: webdriver.Chrome) -> str:
+    """
+    捕获页面的DOM快照，并生成一个哈希值
+
+    :param driver: Selenium WebDriver实例
+    :return: 返回页面哈希值
+    """
     page_source = driver.page_source
     return hashlib.md5(page_source.encode()).hexdigest()
 
 # 添加cookie
 def add_driver_cookie(driver: webdriver.Chrome, website: str, cookies: list) -> None:
+    """
+    添加指定域名下的所有cookie
+
+    :param driver: Selenium WebDriver实例
+    :param website: 要添加cookie的网址
+    :param cookies: 要添加的cookie列表
+    """
     try:
         driver.get(website)
         driver.delete_all_cookies()
@@ -91,6 +113,13 @@ def add_driver_cookie(driver: webdriver.Chrome, website: str, cookies: list) -> 
 
 # 获取题目+AI话术
 def get_problem_saying(pid: str, notes: str) -> str:
+    '''
+    获取题目+AI话术
+
+    :param pid: 题目ID
+    :param notes: 额外提示
+    :return: AI话术
+    '''
     global user_data
     problem_url = f"{user_data['OJ']['URL']}/api/get-problem-detail?problemId={pid}"
     try:
@@ -117,7 +146,12 @@ def get_problem_saying(pid: str, notes: str) -> str:
         return ""
 
 # 复制代码
-def copy_code(driver: webdriver.Chrome, AI_URL: str) -> None:
+def copy_code(driver: webdriver.Chrome) -> None:
+    '''
+    复制代码
+
+    :param driver: Selenium WebDriver实例
+    '''
     try:
         divs = driver.find_elements(By.CSS_SELECTOR, "div[class*='ml-[4px]']")
         target_divs = [div for div in divs if "复制" in div.text]
@@ -168,58 +202,60 @@ def training_code() -> None:
 
     # AI
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
-    for tid in tids.split(','):
-        print('start,tid:', str(tid))
-        driver.get(f"{user_data['OJ']['URL']}/training/{tid}")
-        question_ID = []
-        divs = driver.find_elements(By.XPATH, "//div[contains(concat(' ', @class, ' '), ' vxe-cell ') and contains(concat(' ', @class, ' '), ' c--tooltip ') and contains(@style, 'width: 148px;')]")
-        for div in divs:
-            labels = div.find_elements(By.XPATH, ".//span[contains(concat(' ', @class, ' '), ' vxe-cell--label ')]")
-            for label in labels:
-                question_ID.append(label.text)
+    tidlist = tids.split(',')
+    if tidlist[0] != '':
+        for tid in tidlist:
+            print('start,tid:', str(tid))
+            driver.get(f"{user_data['OJ']['URL']}/training/{tid}")
+            question_ID = []
+            divs = driver.find_elements(By.XPATH, "//div[contains(concat(' ', @class, ' '), ' vxe-cell ') and contains(concat(' ', @class, ' '), ' c--tooltip ') and contains(@style, 'width: 148px;')]")
+            for div in divs:
+                labels = div.find_elements(By.XPATH, ".//span[contains(concat(' ', @class, ' '), ' vxe-cell--label ')]")
+                for label in labels:
+                    question_ID.append(label.text)
 
-        driver.get(AI_URL)
-        for i in question_ID:
-            try:
-                problem = get_problem_saying(i, notes)
-            except Exception as e:
-                print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
-                continue
-            sleep(0.5)
-            textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
-            textarea.click()
-            textarea.send_keys(problem)
-            sleep(1)
-            textarea.send_keys("\n")
-            sleep(10)
-            if not is_page_stable(driver):
-                print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
-                driver.refresh()
-                continue
-            copy_code(driver, AI_URL)
-            sleep(0.5)
-            code = pyperclip.paste()
+            driver.get(AI_URL)
+            for i in question_ID:
+                try:
+                    problem = get_problem_saying(i, notes)
+                except Exception as e:
+                    print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
+                    continue
+                sleep(0.5)
+                textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
+                textarea.click()
+                textarea.send_keys(problem)
+                sleep(1)
+                textarea.send_keys("\n")
+                sleep(10)
+                if not is_page_stable(driver):
+                    print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
+                    driver.refresh()
+                    continue
+                copy_code(driver, AI_URL)
+                sleep(0.5)
+                code = pyperclip.paste()
 
-            headers = {
-                'Content-Type': 'application/json',
-                'Cookie': f'JSESSIONID={jsessionid_cookie}',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-            data = {
-                'cid': 0,
-                'code': code,
-                'gid': None,
-                'isRemote': False,
-                'language': 'C++',
-                'pid': i,
-                'tid': None
-            }
-            response = requests.post(url=f"{user_data['OJ']['URL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
-            if response.status_code != 200:
-                print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-            now = datetime.now()
-            formatted_time = now.strftime("%H:%M:%S")
-            print(f"{formatted_time},pid:{i}")
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Cookie': f'JSESSIONID={jsessionid_cookie}',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                data = {
+                    'cid': 0,
+                    'code': code,
+                    'gid': None,
+                    'isRemote': False,
+                    'language': 'C++',
+                    'pid': i,
+                    'tid': None
+                }
+                response = requests.post(url=f"{user_data['OJ']['URL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+                if response.status_code != 200:
+                    print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
+                now = datetime.now()
+                formatted_time = now.strftime("%H:%M:%S")
+                print(f"{formatted_time},pid:{i}")
     driver.quit()
 
 def problem_code() -> None:
@@ -259,49 +295,51 @@ def problem_code() -> None:
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
 
     driver.get(AI_URL)
-    for pid in pids.split(','):
-        try:
-            problem = get_problem_saying(pid, notes)
-        except Exception as e:
-            print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
-            continue
-        sleep(0.5)
-        textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
-        textarea.click()
-        textarea.send_keys(problem)
-        sleep(1)
-        textarea.send_keys("\n")
-        sleep(10)
-        if not is_page_stable(driver):
-            print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
-            driver.refresh()
-            continue
-        copy_code(driver, AI_URL)
-        sleep(0.5)
-        code = pyperclip.paste()
+    pidlist = pids.split(',')
+    if pidlist[0] != '':
+        for pid in pidlist:
+            try:
+                problem = get_problem_saying(pid, notes)
+            except Exception as e:
+                print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
+                continue
+            sleep(0.5)
+            textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
+            textarea.click()
+            textarea.send_keys(problem)
+            sleep(1)
+            textarea.send_keys("\n")
+            sleep(10)
+            if not is_page_stable(driver):
+                print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
+                driver.refresh()
+                continue
+            copy_code(driver, AI_URL)
+            sleep(0.5)
+            code = pyperclip.paste()
 
-        headers = {
-            'Content-Type': 'application/json',
-            'Cookie': f'JSESSIONID={jsessionid_cookie}',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        data = {
-            'cid': 0,
-            'code': code,
-            'gid': None,
-            'isRemote': False,
-            'language': 'C++',
-            'pid': pid,
-            'tid': None
-        }
-        response = requests.post(url=f"{user_data['OJ']['URL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
-        if response.status_code != 200:
-            print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-            driver.quit()
-            return
-        now = datetime.now()
-        formatted_time = now.strftime("%H:%M:%S")
-        print(f"{formatted_time},pid:{pid}")
+            headers = {
+                'Content-Type': 'application/json',
+                'Cookie': f'JSESSIONID={jsessionid_cookie}',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            data = {
+                'cid': 0,
+                'code': code,
+                'gid': None,
+                'isRemote': False,
+                'language': 'C++',
+                'pid': pid,
+                'tid': None
+            }
+            response = requests.post(url=f"{user_data['OJ']['URL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+            if response.status_code != 200:
+                print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
+                driver.quit()
+                return
+            now = datetime.now()
+            formatted_time = now.strftime("%H:%M:%S")
+            print(f"{formatted_time},pid:{pid}")
     driver.quit()
 
 def get_user_data() -> None:
@@ -357,15 +395,14 @@ def get_user_data() -> None:
         driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
         print('请自行操作登录AI，完成后回车', end='')
         driver.get('https://bot.n.cn/')
-        input('')
+        system('pause')
         driver.refresh()
         cookies = driver.get_cookies()
-        cookie_list = [cookie for cookie in cookies if cookie['name'] == 'JSESSIONID']
+        cookie_list = [cookie for cookie in cookies]
         user_data['AI_cookies'] = cookie_list
         with open(user_data_path, 'w') as file:
             dump(user_data, file)
         driver.quit()
-        print(Fore.GREEN + '配置成功' + Style.RESET_ALL)
     except Exception as e:
         print(Fore.RED + f'配置过程中出错: {str(e)}' + Style.RESET_ALL)
         if 'driver' in locals():
@@ -375,32 +412,32 @@ if __name__ == '__main__':
     mode = None
     print(Fore.GREEN + '启动时间:' + str(int((time() - Start_time) * 100) / 100))
     while(mode != '4'):
-        print(Fore.BLUE + '由一只蚊子WZ制作\nGitee仓库:https://gitee.com/wzokee/oj-auto-problem-solver-bot' + Back.RED + Fore.WHITE + '\n仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.退出\n' + Style.RESET_ALL)
+        print(Fore.BLUE + 'Copyright (c) 2025 WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/oj-auto-problem-solver-bot' + Back.RED + Fore.WHITE + '\n仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
         if mode == '1':
             get_user_data()
             system('cls')
-            print('配置成功')
-            input('')
+            print(f'{Fore.GREEN}配置成功{Style.RESET_ALL}')
+            system('pause')
             is_user_data_read = True
         elif mode == '2':
             if is_user_data_read:
                 training_code()
-                print('刷题结束')
-                input('')
+                print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
+                system('pause')
                 system('cls')
             else:
-                print(Fore.YELLOW + '未导入配置,请先配置信息')
-                input('')
+                print(f'{Fore.YELLOW}未导入配置,请先配置信息{Style.RESET_ALL}')
+                system('pause')
                 system('cls')
         elif mode == '3':
             if is_user_data_read:
                 problem_code()
-                print('做题结束')
-                input('')
+                print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
+                system('pause')
                 system('cls')
             else:
-                print(Fore.YELLOW + '未导入配置,请先配置信息')
-                input('')
+                print(f'{Fore.YELLOW}未导入配置,请先配置信息{Style.RESET_ALL}')
+                system('pause')
                 system('cls')
