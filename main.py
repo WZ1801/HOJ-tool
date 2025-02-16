@@ -1,4 +1,4 @@
-#coding=utf-8
+#c!ding=utf-8
 from time import time, sleep
 
 Start_time = time()
@@ -137,7 +137,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         )
         example_str = example_conversion_format(problem['examples'])
         return (
-            f"{problem_str}。{example_str}。帮我编写c++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间。{notes}"
+            f"{problem_str}。{example_str}。帮我编写c++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间，尽可能优化，达到数据极限。{notes}"
             .replace("\n", " ")
         )
     except Exception as e:
