@@ -3,20 +3,19 @@ from time import time, sleep
 
 Start_time = time()
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
+import requests, pyperclip, hashlib, re, logging, sys, json
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from dotenv import load_dotenv
-from os import path as pt
-from os import system
+from selenium.webdriver.common.by import By
+from selenium import webdriver
 from colorama import init, Fore, Back, Style
 from json import dump, load, dumps
+from dotenv import load_dotenv
 from datetime import datetime
-import requests, pyperclip, hashlib, re, logging, sys, subprocess
-
+from os import path as pt
+from os import system
 
 # 加载环境变量
 load_dotenv()
@@ -64,7 +63,7 @@ def example_conversion_format(examples: str) -> str:
     return out_example
 
 # 等待页面上没有任何元素变化
-def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 3, interval: float = 1.5) -> bool:
+def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 5, interval: float = 1.5) -> bool:
     """
     等待页面上没有任何元素变化
 
@@ -139,11 +138,42 @@ def get_problem_saying(pid: str, notes: str) -> str:
         example_str = example_conversion_format(problem['examples'])
         return (
             f"{problem_str}。{example_str}。帮我编写c++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间。{notes}"
-            .replace('\n', '')
+            .replace("\n", " ")
         )
     except Exception as e:
         print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
         return ""
+
+def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
+    '''
+    获取训练集题目ID
+
+    :param tid: 训练集ID
+    :param jsessionid_cookie: JSESSIONID的cookie
+    :return: 训练集题目ID列表
+    '''
+    global user_data
+    headers = {
+        'Content-Type': 'application/json',
+        'Cookie': f'JSESSIONID={jsessionid_cookie}',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(f"{user_data['OJ']['URL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
+    internalpids = [i['pid'] for i in response['data']]
+
+    data={
+        'cid': 'null',
+        'containsEnd': 'false',
+        'gid': 'null',
+        'isContestProblemList': 'false',
+        'pidList': internalpids
+    }
+    response2 = requests.post(url=f"{user_data['OJ']['URL']}/api/get-user-problem-status", headers=headers, data=json.dumps(data)).json()
+    pids = []
+    for i in response['data']:
+        if response2['data'][str(i['pid'])]['status'] != 0:
+            pids.append(i['problemId'])
+    return pids
 
 # 复制代码
 def copy_code(driver: webdriver.Chrome) -> None:
@@ -164,17 +194,18 @@ def copy_code(driver: webdriver.Chrome) -> None:
         try:
             driver.refresh()
             driver.implicitly_wait(10)
+            divs = driver.find_elements(By.CSS_SELECTOR, "div[class*='ml-[4px]']")
+            target_divs = [div for div in divs if "复制" in div.text]
+            if target_divs:
+                last_target_div = target_divs[-1]
+                driver.execute_script("arguments[0].scrollIntoView(true);", last_target_div)
+                last_target_div.click()
         except Exception as e:
             print(Fore.RED + '抢修失败' + str(e) + Style.RESET_ALL)
 
-def training_code() -> None:
+def all_code() -> None:
     global driver, user_data, options
     driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
-    tids = input('请输入训练编号,用逗号隔开:')
-    AI_URL = user_data['AI_URL']
-    notes = input('备注:')  # 代码后添加的东西
-
-    # 登录
     username = user_data['OJ']['username']
     password = user_data['OJ']['password']
     driver.get(f"{user_data['OJ']['URL']}/home")
@@ -202,20 +233,73 @@ def training_code() -> None:
 
     # AI
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+
+    headers = {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    i = 1
+    while True:
+        tids = []
+        response = requests.get(f"http://82.156.246.133/api/get-training-list?currentPage={i}", headers=headers).json()
+        for j in response['data']['records']:
+            tids.append(j['id'])
+        if len(tids) == 0:
+            break
+        tids_str = ','.join(map(str, tids))
+        training_code(driver=driver, tids=tids_str, jsessionid_cookie=jsessionid_cookie,is_call=True)
+        i += 1
+
+def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False) -> None:
+    global user_data, options
+    if not is_call:
+        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
+        tids = input('请输入训练编号,用逗号隔开:')
+        notes = input('备注:')  # 代码后添加的东西
+        
+    AI_URL = user_data['AI_URL']
+
+    # 登录
+    if not is_call:
+        username = user_data['OJ']['username']
+        password = user_data['OJ']['password']
+        driver.get(f"{user_data['OJ']['URL']}/home")
+        driver.maximize_window()
+        driver.implicitly_wait(10)
+        login_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@class='el-button el-button--primary el-button--medium is-round']"))
+        )
+        login_button.click()
+        find_boby = driver.find_element(By.XPATH, "//input[@placeholder='用户名']")
+        find_boby.send_keys(username)
+        find_boby = driver.find_element(By.XPATH, "//input[@placeholder='密码']")
+        find_boby.send_keys(password)
+        sleep(0.1)
+        submit_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@class='el-button el-button--primary']"))
+        )
+        submit_button.click()
+        sleep(1)
+
+        # 获取cookile
+        driver.refresh()
+        cookies = driver.get_cookies()
+        jsessionid_cookie = next((cookie for cookie in cookies if cookie['name'] == 'JSESSIONID'), {}).get('value')
+
+        # AI
+        add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+
     tidlist = tids.split(',')
     if tidlist[0] != '':
         for tid in tidlist:
             print('start,tid:', str(tid))
-            driver.get(f"{user_data['OJ']['URL']}/training/{tid}")
-            question_ID = []
-            divs = driver.find_elements(By.XPATH, "//div[contains(concat(' ', @class, ' '), ' vxe-cell ') and contains(concat(' ', @class, ' '), ' c--tooltip ') and contains(@style, 'width: 148px;')]")
-            for div in divs:
-                labels = div.find_elements(By.XPATH, ".//span[contains(concat(' ', @class, ' '), ' vxe-cell--label ')]")
-                for label in labels:
-                    question_ID.append(label.text)
-
+            try:
+                pids = get_training_pids(tid, jsessionid_cookie)
+            except Exception as e:
+                print(f'{Fore.RED}获取训练题目ID时出错:{str(e)}{Style.RESET_ALL}')
+                continue
             driver.get(AI_URL)
-            for i in question_ID:
+            for i in pids:
                 try:
                     problem = get_problem_saying(i, notes)
                 except Exception as e:
@@ -232,7 +316,7 @@ def training_code() -> None:
                     print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
                     driver.refresh()
                     continue
-                copy_code(driver, AI_URL)
+                copy_code(driver)
                 sleep(0.5)
                 code = pyperclip.paste()
 
@@ -256,7 +340,8 @@ def training_code() -> None:
                 now = datetime.now()
                 formatted_time = now.strftime("%H:%M:%S")
                 print(f"{formatted_time},pid:{i}")
-    driver.quit()
+    if not is_call:
+        driver.quit()
 
 def problem_code() -> None:
     global options, user_data
@@ -314,7 +399,7 @@ def problem_code() -> None:
                 print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
                 driver.refresh()
                 continue
-            copy_code(driver, AI_URL)
+            copy_code(driver)
             sleep(0.5)
             code = pyperclip.paste()
 
@@ -411,8 +496,8 @@ def get_user_data() -> None:
 if __name__ == '__main__':
     mode = None
     print(Fore.GREEN + '启动时间:' + str(int((time() - Start_time) * 100) / 100))
-    while(mode != '4'):
-        print(Fore.BLUE + 'Copyright (c) 2025 WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/oj-auto-problem-solver-bot' + Back.RED + Fore.WHITE + '\n仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.退出\n' + Style.RESET_ALL)
+    while(mode != '5'):
+        print(Fore.BLUE + 'Copyright (c) 2025 WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/oj-auto-problem-solver-bot' + Back.RED + Fore.WHITE + '\n仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.一键刷所有题\n5.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
         if mode == '1':
@@ -434,6 +519,16 @@ if __name__ == '__main__':
         elif mode == '3':
             if is_user_data_read:
                 problem_code()
+                print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
+                system('pause')
+                system('cls')
+            else:
+                print(f'{Fore.YELLOW}未导入配置,请先配置信息{Style.RESET_ALL}')
+                system('pause')
+                system('cls')
+        elif mode == '4':
+            if is_user_data_read:
+                all_code()
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
