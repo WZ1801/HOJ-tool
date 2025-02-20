@@ -16,6 +16,7 @@ pip install pyperclip
 pip install hashlib
 pip install re
 pip install colorama
+pip install dotenv
 
 cls
 echo All packages installed successfully.
