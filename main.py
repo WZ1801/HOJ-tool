@@ -137,7 +137,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         )
         example_str = example_conversion_format(problem['examples'])
         return (
-            f"{problem_str}。{example_str}。帮我编写c++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间，尽可能优化，达到数据极限。{notes}"
+            f"{problem_str}。{example_str}。帮我编写C++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间，尽可能优化，达到数据极限。{notes}"
             .replace("\n", " ")
         )
     except Exception as e:
@@ -203,12 +203,17 @@ def copy_code(driver: webdriver.Chrome) -> None:
         except Exception as e:
             print(Fore.RED + '抢修失败' + str(e) + Style.RESET_ALL)
 
-def all_code() -> None:
-    global driver, user_data, options
-    driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
-    username = user_data['OJ']['username']
-    password = user_data['OJ']['password']
-    driver.get(f"{user_data['OJ']['URL']}/home")
+def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, password: str) -> str:
+    """
+    登录并获取JSESSIONID cookie
+
+    :param driver: Selenium WebDriver实例
+    :param url: 登录页面URL
+    :param username: 用户名
+    :param password: 密码
+    :return: JSESSIONID cookie值
+    """
+    driver.get(url)
     driver.maximize_window()
     driver.implicitly_wait(10)
     login_button = WebDriverWait(driver, 10).until(
@@ -225,11 +230,16 @@ def all_code() -> None:
     )
     submit_button.click()
     sleep(1)
-
-    # 获取cookile
     driver.refresh()
     cookies = driver.get_cookies()
     jsessionid_cookie = next((cookie for cookie in cookies if cookie['name'] == 'JSESSIONID'), {}).get('value')
+    return jsessionid_cookie
+
+def all_code() -> None:
+    global driver, user_data, options
+    driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
+    # 替换原有登录逻辑
+    jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
     # AI
     add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
@@ -308,10 +318,11 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
                 sleep(0.5)
                 textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
                 textarea.click()
-                textarea.send_keys(problem)
-                sleep(1)
+                for _ in problem:
+                    textarea.send_keys(_)
+                sleep(0.2)
                 textarea.send_keys("\n")
-                sleep(10)
+                sleep(7)
                 if not is_page_stable(driver):
                     print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
                     driver.refresh()
