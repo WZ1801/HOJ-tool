@@ -2,7 +2,7 @@
 test*
 
 #my user data
-user_data*
+*user_data*
 
 #ASC certificate
 *.ASC
