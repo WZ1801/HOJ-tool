@@ -138,7 +138,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
             .replace("\\", "")
         )
         example_str = example_conversion_format(problem['examples'])
-        if problem['isFileIO'] == 'true':
+        if problem['isFileIO']:
             fileIOstr = f"程序为文件IO输入输出，输入文件名为：{problem['ioReadFileName']}，输出文件名为：{problem['ioWriteFileName']}。"
         else:
             fileIOstr = ""
