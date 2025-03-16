@@ -1,5 +1,7 @@
 # OJ自动刷题爬虫
 
+#### 此项目已被![](http://saobby.pythonanywhere.com/api/webcounter?id=s6d4DBNcr508Rklx)台设备访问（每ip算一个）
+
 ## 介绍
 
 利用AI（ 360bot ）对HOJ类OJ的自动爬虫刷题系统，适配于 $Windows$
