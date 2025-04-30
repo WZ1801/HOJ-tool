@@ -52,8 +52,9 @@ _build/
 # Nuitka
 #  Usually these files are written by a python script from a template
 #  before Nuitka does the compilation, so as to inject date/other infos into it.
-mian.build
-mian.dist
+mian.build/
+mian.dist/
+main.onefile-build/
 nuitka-crash-report.xml
 
 # Installer logs
