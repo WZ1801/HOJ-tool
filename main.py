@@ -53,8 +53,8 @@ def example_conversion_format(examples: str) -> str:
     matches = re.findall(pattern, examples, re.DOTALL)
     formatted_examples = []
     for match in matches:
-        input_part = match[0].strip().replace("\n", " ")
-        output_part = match[1].strip().replace("\n", " ")
+        input_part = match[0].strip()
+        output_part = match[1].strip()
         formatted_example = f"输入{input_part}，输出{output_part}"
         formatted_examples.append(formatted_example)
     
@@ -127,7 +127,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
         problem = response.json()['data']['problem']
         problem_str = (
-            f"请编写可运行完整程序:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
+            f"请编写可运行完整程序,描述中\n表示为换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
             .replace("\r", "")
             .replace("<code>", "")
             .replace("</code>", "")
@@ -144,7 +144,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
             fileIOstr = ""
         return (
             f"{problem_str}。{fileIOstr}{example_str}。帮我编写C++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间，尽可能优化，达到数据极限。{notes}"
-            .replace("\n", " ")
+            .replace("\n", "\\n")
         )
     except Exception as e:
         print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
@@ -425,7 +425,7 @@ if __name__ == '__main__':
     mode = None
     print(Fore.GREEN + '启动时间:' + str(int((time() - Start_time) * 100) / 100))
     while(mode != '5'):
-        print(Fore.BLUE + 'Copyright (c) 2025 WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/oj-auto-problem-solver-bot' + Back.RED + Fore.WHITE + '\n仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.一键刷所有题\n5.退出\n' + Style.RESET_ALL)
+        print(Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/oj-auto-problem-solver-bot\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.刷训练题目\n3.刷个题\n4.一键刷所有题\n5.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
         if mode == '1':
@@ -436,7 +436,10 @@ if __name__ == '__main__':
             is_user_data_read = True
         elif mode == '2':
             if is_user_data_read:
-                training_code()
+                try:
+                    training_code()
+                except Exception as e:
+                    print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
@@ -446,7 +449,10 @@ if __name__ == '__main__':
                 system('cls')
         elif mode == '3':
             if is_user_data_read:
-                problem_code()
+                try:
+                    problem_code()
+                except Exception as e:
+                    print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
@@ -456,7 +462,10 @@ if __name__ == '__main__':
                 system('cls')
         elif mode == '4':
             if is_user_data_read:
-                all_code()
+                try:
+                    all_code()
+                except Exception as e:
+                    print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
