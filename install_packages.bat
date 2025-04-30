@@ -10,11 +10,10 @@ python -m pip install --upgrade pip
  
 echo Installing required Python packages...
  
-pip install selenium 
-pip install requests 
+pip install selenium
+pip install requests
 pip install pyperclip
 pip install hashlib
-pip install re
 pip install colorama
 pip install dotenv
 
