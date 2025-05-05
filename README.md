@@ -5,32 +5,7 @@
 ## 介绍
 
 利用AI（ 360bot ）对HOJ类OJ的自动爬虫刷题系统，适配于 $Windows$
-### 核心功能 
- 
-#### 题目处理流程 
-- 格式转换函数 
-  - 正则处理示例输入输出 
-- 页面稳定性检测 
-  - 哈希值比对DOM状态 
- 
-#### AI交互模块 
-- 自动生成问题描述 
-  - API获取题目详情 
-- 代码复制机制 
-  - 多重异常处理策略 
- 
-#### 自动化评测系统 
-- Selenium浏览器控制 
-  - 自动登录OJ系统 
-  - Cookie会话维持 
-- 代码提交系统 
-  - 请求头构造 
-  - 评测结果反馈 
- 
-#### 运行模式 
-- 训练模式批量处理 
-- 单题提交模式 
-- 用户引导配置 
+
 ## 安装教程
 
 ⚠EXE现阶段不稳定，非必要不建议下载
@@ -51,37 +26,35 @@
 
 1. 打开  main.py  或  main.exe
 
-   ![](README_md_files/083065a0-e789-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+   ![](README_md_files/1.jpeg)
 
    打开后显示为（主菜单）：
 
-   ![](README_md_files/3c353330-e789-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+   ![](README_md_files/2.png)
 
 2. 配置信息（按照提示操作，之前配置过会保存）
 
    1. 输入1，回车
 
-      ![](README_md_files/51c78220-e789-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+      ![](README_md_files/3.png)
 
-   2. 输入OJ网址（保留 http:// 或 https:// ）、账号、密码，回车
+   2. 输入OJ网址、OJAPI（保留 http:// 或 https:// ）、账号、密码，回车
 
-      ![](README_md_files/d3ae8360-e789-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+      ![](README_md_files/4.png)
 
    3. 注册登录[360bot](https://bot.n.cn/)账号，随便建个聊天页面，选择模型，聊一句，复制网址，填入程序内的AI对话地址（保留 http:// 或 https://），回车
 
-      ![](README_md_files/7769f2f0-e78a-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+      ![](README_md_files/5.png)
 
-      ![](README_md_files/b82154f0-e78a-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+      ![](README_md_files/6.png)
 
    4. 输入 ChromeDriver 地址（不要套双引号或单引号），回车
 
-      ![](README_md_files/4b7f7790-e78b-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
+      ![](README_md_files/7.png)
 
    5. 在弹出的页面登录 360bot（以获取Cookies自动登录），登录后回车，完成配置，配置会保存在同目录下的 user_data.json
 
-      ![](README_md_files/ee2c0f30-e78b-11ef-a208-5967ca193d2f.jpeg?v=1&type=image)
-
-3. 开始刷题（按照提示操作，可刷训练，可刷个题）
+3. 开始刷题（按照提示操作，可刷训练、个题、全部）
 
 ## 参与贡献
 
