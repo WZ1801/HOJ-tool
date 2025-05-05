@@ -122,7 +122,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
     :return: AI话术
     '''
     global user_data
-    problem_url = f"{user_data['OJ']['URL']}/api/get-problem-detail?problemId={pid}"
+    problem_url = f"{user_data['OJ']['APIURL']}/api/get-problem-detail?problemId={pid}"
     try:
         response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
         problem = response.json()['data']['problem']
@@ -165,7 +165,7 @@ def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
         'Cookie': f'JSESSIONID={jsessionid_cookie}',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    response = requests.get(f"{user_data['OJ']['URL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
+    response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
     internalpids = [i['pid'] for i in response['data']]
 
     data={
@@ -175,7 +175,7 @@ def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
         'isContestProblemList': 'false',
         'pidList': internalpids
     }
-    response2 = requests.post(url=f"{user_data['OJ']['URL']}/api/get-user-problem-status", headers=headers, data=json.dumps(data)).json()
+    response2 = requests.post(url=f"{user_data['OJ']['APIURL']}/api/get-user-problem-status", headers=headers, data=json.dumps(data)).json()
     pids = []
     for i in response['data']:
         if response2['data'][str(i['pid'])]['status'] != 0:
@@ -224,9 +224,7 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     driver.get(url)
     driver.maximize_window()
     driver.implicitly_wait(10)
-    login_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[@class='el-button el-button--primary el-button--medium is-round']"))
-    )
+    login_button = driver.find_element(By.XPATH, '//*[@id="header"]/ul/div[2]/button')
     login_button.click()
     find_boby = driver.find_element(By.XPATH, "//input[@placeholder='用户名']")
     find_boby.send_keys(username)
@@ -260,7 +258,7 @@ def all_code() -> None:
     i = 1
     while True:
         tids = []
-        response = requests.get(f"http://82.156.246.133/api/get-training-list?currentPage={i}", headers=headers).json()
+        response = requests.get(f"{user_data['APIURL']}/api/get-training-list?currentPage={i}", headers=headers).json()
         for j in response['data']['records']:
             tids.append(j['id'])
         if len(tids) == 0:
@@ -304,6 +302,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
         # 登录
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
         add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+        pids = input("请输入题目编号，用逗号分隔：")
 
     driver.get(user_data['AI_URL'])
     pidlist = pids.split(',')
@@ -344,7 +343,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
                 'pid': pid,
                 'tid': None
             }
-            response = requests.post(url=f"{user_data['OJ']['URL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+            response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
             if response.status_code != 200:
                 print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
                 driver.quit()
@@ -358,7 +357,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
 def get_user_data() -> None:
     global user_data_path, options, user_data
     user_data = {
-        'OJ': {'URL': None, 'username': None, 'password': None},
+        'OJ': {'URL': None, 'APIURL': None, 'username': None, 'password': None},
         'AI_cookies': None,
         'AI_URL': None,
         'ChromeDriver_path': None
@@ -385,6 +384,13 @@ def get_user_data() -> None:
             url = input('OJ网址:').rstrip('/')
             if validate_url(url):
                 user_data['OJ']['URL'] = url
+            else:
+                print(Fore.RED + '无效的URL格式，请重新输入。' + Style.RESET_ALL)
+
+        while not user_data['OJ']['APIURL']:
+            url = input('OJ API网址(如果你不知道是什么,请填上面的OJ网址,这是为防止防爬虫的OJ设计的):').rstrip('/')
+            if validate_url(url):
+                user_data['OJ']['APIURL'] = url
             else:
                 print(Fore.RED + '无效的URL格式，请重新输入。' + Style.RESET_ALL)
 
