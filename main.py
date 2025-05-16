@@ -270,11 +270,11 @@ def all_code() -> None:
 def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False) -> None:
     global user_data, options
     if not is_call:
-        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
         tids = input('请输入训练编号,用逗号隔开:')
         notes = input('备注:')  # 代码后添加的东西
         
         # 登录
+        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
         # AI
@@ -297,12 +297,12 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
 def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False) -> None:
     global options, user_data
     if not is_call:
+        pids = input("请输入题目编号，用逗号分隔：")
         driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
 
         # 登录
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
         add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
-        pids = input("请输入题目编号，用逗号分隔：")
 
     driver.get(user_data['AI_URL'])
     pidlist = pids.split(',')
