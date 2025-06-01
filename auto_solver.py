@@ -254,7 +254,7 @@ def all_code() -> None:
     i = 1
     while True:
         tids = []
-        response = requests.get(f"{user_data['APIURL']}/api/get-training-list?currentPage={i}", headers=headers).json()
+        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-list?currentPage={i}", headers=headers).json()
         for j in response['data']['records']:
             tids.append(j['id'])
         if len(tids) == 0:
@@ -310,7 +310,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
                 print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
                 continue
             sleep(0.5)
-            textarea = driver.find_element(By.XPATH, "//textarea[@placeholder='输入任何问题，Enter发送，Shift + Enter 换行']")
+            textarea = driver.find_element(By.XPATH, "//textarea[@class='ant-input ant-input-borderless css-tiqrq8 !text-16px !leading-snug !resize-none break-all overflow-x-hidden nw-scrollbar !transition-none !text-primary !p-0px nw-scrollbar !min-h-22px !leading-22px']")
             textarea.click()
             for _ in str(problem):
                 textarea.send_keys(_)
@@ -384,10 +384,10 @@ def main() -> None:
                 system('cls')
         elif mode == '3':
             if is_user_data_read:
-                try:
-                    all_code()
-                except Exception as e:
-                    print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
+                # try:
+                all_code()
+                # except Exception as e:
+                    # print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
