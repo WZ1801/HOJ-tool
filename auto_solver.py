@@ -384,10 +384,10 @@ def main() -> None:
                 system('cls')
         elif mode == '3':
             if is_user_data_read:
-                # try:
-                all_code()
-                # except Exception as e:
-                    # print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
+                try:
+                    all_code()
+                except Exception as e:
+                    print(Fore.RED + f'刷题过程中出现未知错误: {str(e)}' + Style.RESET_ALL)
                 print(f'{Fore.GREEN}刷题结束{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
