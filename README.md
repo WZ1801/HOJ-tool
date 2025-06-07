@@ -1,10 +1,10 @@
-# OJ自动刷题爬虫
+# HOJ tool
 
 #### 此项目已被![](http://saobby.pythonanywhere.com/api/webcounter?id=s6d4DBNcr508Rklx)台设备访问（每ip算一个）
 
 ## 介绍
 
-利用AI（ 360bot ）对HOJ类OJ的自动爬虫刷题系统，适配于 $Windows$
+对于HOJ类OJ的使用辅助，包括自动刷题，封禁他人账号，适配于 $Windows$
 
 ## 安装教程
 
@@ -23,7 +23,7 @@
 4. 安装 Python 第三方库（ 运行 install_packages.bat ） (下载EXE的忽略)
 
 ## 使用说明
-
+### 自动刷题模块
 1. 打开  main.py  或  main.exe
 
    ![](README_md_files/1.jpeg)
