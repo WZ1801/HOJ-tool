@@ -6,13 +6,16 @@ from os import path as pt
 from os import system
 from json import dump
 
+# 配置文件路径
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
 
 def get_user_data() -> None:
+    '''
+    获取用户数据
+    '''
     global user_data_path, options, user_data
     user_data = {
         'OJ': {'URL': None, 'APIURL': None, 'username': None, 'password': None},
-        'AI_cookies': None,
         'AI_URL': None,
         'ChromeDriver_path': None
     }
@@ -42,7 +45,7 @@ def get_user_data() -> None:
                 print(Fore.RED + '无效的URL格式，请重新输入。' + Style.RESET_ALL)
 
         while not user_data['OJ']['APIURL']:
-            url = input('OJ API网址(如果你不知道是什么,请填上面的OJ网址,这是为防止防爬虫的OJ设计的):').rstrip('/')
+            url = input('OJ API网址(如果你不知道是什么,请填上面的OJ网址):').rstrip('/')
             if validate_url(url):
                 user_data['OJ']['APIURL'] = url
             else:
@@ -65,21 +68,10 @@ def get_user_data() -> None:
             else:
                 print(Fore.RED + '文件路径不存在，请重新输入。' + Style.RESET_ALL)
 
-        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
-        print('请自行操作登录AI，完成后回车', end='')
-        driver.get('https://bot.n.cn/')
-        system('pause')
-        driver.refresh()
-        cookies = driver.get_cookies()
-        cookie_list = [cookie for cookie in cookies]
-        user_data['AI_cookies'] = cookie_list
         with open(user_data_path, 'w') as file:
             dump(user_data, file)
-        driver.quit()
     except Exception as e:
         print(Fore.RED + f'配置过程中出错: {str(e)}' + Style.RESET_ALL)
-        if 'driver' in locals():
-            driver.quit()
 
 def main():
     init(autoreset=True)
