@@ -60,7 +60,7 @@ def example_conversion_format(examples: str) -> str:
     return out_example
 
 # 等待页面上没有任何元素变化
-def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 5, interval: float = 1.5) -> bool:
+def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 10, interval: float = 1) -> bool:
     """
     等待页面上没有任何元素变化
 
@@ -73,6 +73,9 @@ def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 5, interval: fl
     while time() - start_time < timeout:
         current_hash = _get_page_hash(driver)
         sleep(interval)
+        try:
+            driver.find_element(By.XPATH, '//button[@class="size-32px rounded-full cursor-pointer flex justify-center items-center border-1px  bg-[#fff] hover:bg-[#F6F7F9] border-[rgba(0,0,0,0.1)] absolute -top-12px transform -translate-y-full"]').click()
+        except: pass
         new_hash = _get_page_hash(driver)
         if current_hash == new_hash:
             break
@@ -186,7 +189,7 @@ def copy_code(driver: webdriver.Chrome) -> None:
     :param driver: Selenium WebDriver实例
     '''
     try:
-        divs = driver.find_elements(By.CSS_SELECTOR, "div[class*='ml-[4px]']")
+        divs = driver.find_elements(By.XPATH, '//div[@class="ml-[4px]"]')
         target_divs = [div for div in divs if "复制" in div.text]
         if target_divs:
             last_target_div = target_divs[-1]
@@ -212,7 +215,7 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     登录并获取JSESSIONID cookie
 
     :param driver: Selenium WebDriver实例
-    :param url: 登录页面URL
+    :param url: 登录APIURL
     :param username: 用户名
     :param password: 密码
     :return: JSESSIONID cookie值
@@ -244,8 +247,9 @@ def all_code() -> None:
     # 登录
     jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
-    # AI
-    add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+    print('请自行操作登录360bot')
+    driver.get('https://bot.n.cn/')
+    system('pause')
 
     headers = {
         'Content-Type': 'application/json',
@@ -273,8 +277,9 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
         driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
-        # AI
-        add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+        print('请自行操作登录360bot')
+        driver.get('https://bot.n.cn/')
+        system('pause')
 
     tidlist = tids.split(',')
     if tidlist[0] != '':
@@ -298,7 +303,10 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
 
         # 登录
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
-        add_driver_cookie(driver, 'https://bot.n.cn/', user_data['AI_cookies'])
+        
+        print('请自行操作登录360bot')
+        driver.get('https://bot.n.cn/')
+        system('pause')
 
     driver.get(user_data['AI_URL'])
     pidlist = pids.split(',')
@@ -310,13 +318,13 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
                 print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
                 continue
             sleep(0.5)
-            textarea = driver.find_element(By.XPATH, "//textarea[@class='ant-input ant-input-borderless css-tiqrq8 !text-16px !leading-snug !resize-none break-all overflow-x-hidden nw-scrollbar !transition-none !text-primary !p-0px nw-scrollbar !min-h-22px !leading-22px']")
+            textarea = driver.find_element(By.XPATH, "//textarea[last()]")
             textarea.click()
-            for _ in str(problem):
+            for _ in [str(problem)[i:i+3] for i in range(0, len(str(problem)), 3)]:
                 textarea.send_keys(_)
-            sleep(1)
+            sleep(0.5)
             textarea.send_keys("\n")
-            sleep(10)
+            sleep(5)
             if not is_page_stable(driver):
                 print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
                 driver.refresh()
