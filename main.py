@@ -1,6 +1,6 @@
 from selenium.webdriver.chrome.service import Service
 from colorama import Fore, Back, Style, init
-import auto_solver, ban_account, sys
+import module.auto_solver, module.ban_account, sys
 from selenium import webdriver
 from os import path as pt
 from os import system
@@ -87,11 +87,11 @@ def main():
             system('pause')
         elif mode == '2':
             try:
-                auto_solver.main()
+                module.auto_solver.main()
             except Exception as e:
                 print(Fore.RED + f'啊？这都报错:{e}' + Style.RESET_ALL)
         elif mode == '3':
-            ban_account.main()
+            module.ban_account.main()
             
 if __name__ == '__main__':
     main()
