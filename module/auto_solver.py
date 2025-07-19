@@ -5,10 +5,11 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from colorama import Fore, Back, Style, init
 from selenium.webdriver.common.by import By
-from json import load, dumps
 from selenium import webdriver
 from dotenv import load_dotenv
 from datetime import datetime
+from threading import Thread
+from json import load, dumps
 from os import path as pt
 from time import sleep
 from os import system
@@ -28,6 +29,10 @@ options.add_argument("--enable-automation")
 
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
 init(autoreset=True)
+
+# 提交相关
+last_submit_time = time()
+submit_list = []
 
 # 导入配置
 is_user_data_read = True
@@ -69,6 +74,7 @@ def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 10, interval: f
     :param interval: 检查间隔（秒）
     :return: 如果页面在指定时间内稳定，则返回True，否则返回False
     """
+    driver.timeouts.implicit_wait = 0.5
     start_time = time()
     while time() - start_time < timeout:
         current_hash = _get_page_hash(driver)
@@ -123,7 +129,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
     global user_data
     problem_url = f"{user_data['OJ']['APIURL']}/api/get-problem-detail?problemId={pid}"
     try:
-        response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+        response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'})
         problem = response.json()['data']['problem']
         problem_str = (
             f"请编写可运行完整程序,描述中\n表示为换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
@@ -149,6 +155,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
         return ""
 
+
 # 获取训练集题目ID
 def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
     '''
@@ -162,7 +169,7 @@ def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
     headers = {
         'Content-Type': 'application/json',
         'Cookie': f'JSESSIONID={jsessionid_cookie}',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
     }
     response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
     internalpids = [i['pid'] for i in response['data']]
@@ -240,6 +247,112 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     jsessionid_cookie = next((cookie for cookie in cookies if cookie['name'] == 'JSESSIONID'), {}).get('value')
     return jsessionid_cookie
 
+def submit_code_thread() -> None:
+    global last_submit_time, submit_list
+    while True:
+        if time() - last_submit_time > 10 and len(submit_list) > 0:
+            # print(submit_list)
+            submit_codee = submit_code(*submit_list[0][:4])
+            last_submit_time = time()
+            if submit_list[0][4] == True:
+                callback_submission(submit_list[0][1], submit_codee, submit_list[0][2])
+            submit_list.pop(0)
+        sleep(1)
+
+def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
+    global user_data
+    headers = {
+        'Content-Type': 'application/json',
+        'Cookie': f'JSESSIONID={JESSIONID}',
+        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
+    }
+    data = {
+        'cid': 0,
+        'code': code,
+        'gid': None,
+        'isRemote': False,
+        'language': lang,
+        'pid': pid,
+        'tid': None
+    }
+    response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+    if response.status_code != 200:
+        print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
+        driver.quit()
+        return False
+    return response.json()['data']['submitId']
+
+def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int = 30, interval: float = 1): 
+    '''回调提交'''
+    
+    global user_data
+    cookies = {
+        'JSESSIONID': f'{JSESSIONID}',
+    }
+    headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Url-Type': 'general',
+        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00',
+    }
+    params = {
+        'submitId': f'{submitId}',
+    }
+    response = None
+    start_time = time()
+    try:
+        while response == None or response.json()['data']['submission']['status'] == 7:
+            response = requests.get(
+                f'{user_data["OJ"]["APIURL"]}/api/get-submission-detail',
+                params=params,
+                cookies=cookies,
+                headers=headers,
+            )
+            sleep(interval)
+            if time() - start_time > timeout: return
+    except: print(f'{Fore.YELLOW}回调查询失败')
+    
+    
+    # print(json.dumps(response.json(), indent=2))
+    try:
+        if response.json()['data']['submission']['status'] != 0:
+            print(f'{Fore.YELLOW}{pid}AI WA!{Style.RESET_ALL}')
+            response = requests.get(
+                f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
+                params=params,
+                cookies=cookies,
+                headers=headers,
+            )
+            judgeCaseList = []
+            for judgeCase in response.json()['data']['judgeCaseList']:
+                judgeCaseList.append((judgeCase['inputData'], judgeCase['outputData']))
+            # print(judgeCaseList)
+            
+            KillerCode = 'import hashlib,sys\na=hashlib.md5(sys.stdin.read().replace(\'\\n\', \'\').encode()).hexdigest()\n'
+            is_first_if = True
+            for judgeCase in judgeCaseList:
+                hash_value = hashlib.md5((judgeCase[0].replace('\n', '')).encode()).hexdigest()
+                # print(hash_value)
+                if judgeCase[1][-3:] == '...': return
+                if is_first_if:
+                    KillerCode += f'a=="{hash_value}"'
+                    is_first_if = False
+                else:
+                    KillerCode += f'or a=="{hash_value}"'
+                KillerCode += f'and print("{judgeCase[1].replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'').replace('\"', '\\\"')}")'
+            # print(KillerCode)
+            if is_first_if: return
+            # import pyperclip
+            # pyperclip.copy(KillerCode)
+            # response = requests.post(f'{user_data["OJ"]["APIURL"]}/api/submit-problem-judge', headers=headers, data=json.dumps(data))
+            # print(response.json())
+            submit_list.append([KillerCode, JSESSIONID, pid, 'Python3', False])
+            print(f'{Fore.GREEN}{pid}回调抢救成功{Style.RESET_ALL}')
+            
+    except Exception as e: 
+        print(f'{Fore.YELLOW}回调提交失败: {e}{Style.RESET_ALL}')
+
 def all_code() -> None:
     global driver, user_data, options
     driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
@@ -253,7 +366,7 @@ def all_code() -> None:
 
     headers = {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
     }
     i = 1
     while True:
@@ -296,7 +409,7 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
         driver.quit()
 
 def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False) -> None:
-    global options, user_data
+    global options, user_data, submit_list
     if not is_call:
         pids = input("请输入题目编号，用逗号分隔：")
         driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
@@ -320,7 +433,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
             sleep(0.5)
             textarea = driver.find_element(By.XPATH, "//textarea[last()]")
             textarea.click()
-            for _ in [str(problem)[i:i+3] for i in range(0, len(str(problem)), 3)]:
+            for _ in [str(problem)[i:i+5] for i in range(0, len(str(problem)), 5)]:
                 textarea.send_keys(_)
             sleep(0.5)
             textarea.send_keys("\n")
@@ -332,26 +445,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
             copy_code(driver)
             sleep(0.3)
             code = pyperclip.paste()
-
-            headers = {
-                'Content-Type': 'application/json',
-                'Cookie': f'JSESSIONID={jsessionid_cookie}',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-            data = {
-                'cid': 0,
-                'code': code,
-                'gid': None,
-                'isRemote': False,
-                'language': 'C++',
-                'pid': pid,
-                'tid': None
-            }
-            response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
-            if response.status_code != 200:
-                print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-                driver.quit()
-                return
+            submit_list.append([code, jsessionid_cookie, pid, 'C++', True])
             now = datetime.now()
             formatted_time = now.strftime("%H:%M:%S")
             print(f"{formatted_time},pid:{pid}")
@@ -359,6 +453,7 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
         driver.quit()
 
 def main() -> None:
+    Thread(target=submit_code_thread).start()
     mode = None
     while(mode != '4'):
         print(Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.刷训练题目\n2.刷个题\n3.一键刷所有题\n4.退出\n' + Style.RESET_ALL)
