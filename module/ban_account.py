@@ -21,7 +21,7 @@ except FileNotFoundError:
 # 封号函数
 def ban(username):
     for i in range(25):
-        if login(username, 'wzoknb') == '对不起！登录失败次数过多！您的账号有风险，半个小时内暂时无法登录！':
+        if login(username, 'esnb') == '对不起！登录失败次数过多！您的账号有风险，半个小时内暂时无法登录！':
             print(f"已封禁:{username}")
             return
     print(f"{Fore.YELLOW}{username}为空号！{Style.RESET_ALL}")

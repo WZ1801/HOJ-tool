@@ -260,27 +260,31 @@ def submit_code_thread() -> None:
         sleep(1)
 
 def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
-    global user_data
-    headers = {
-        'Content-Type': 'application/json',
-        'Cookie': f'JSESSIONID={JESSIONID}',
-        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
-    }
-    data = {
-        'cid': 0,
-        'code': code,
-        'gid': None,
-        'isRemote': False,
-        'language': lang,
-        'pid': pid,
-        'tid': None
-    }
-    response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
-    if response.status_code != 200:
-        print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-        driver.quit()
+    try:
+        global user_data
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'JSESSIONID={JESSIONID}',
+            'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
+        }
+        data = {
+            'cid': 0,
+            'code': code,
+            'gid': None,
+            'isRemote': False,
+            'language': lang,
+            'pid': pid,
+            'tid': None
+        }
+        response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+        if response.status_code != 200:
+            print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
+            driver.quit()
+            return False
+        return response.json()['data']['submitId']
+    except Exception as e:
+        print(f'{Fore.RED}提交代码失败{e}{Style.RESET_ALL}')
         return False
-    return response.json()['data']['submitId']
 
 def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int = 30, interval: float = 1): 
     '''回调提交'''
@@ -310,7 +314,9 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
                 headers=headers,
             )
             sleep(interval)
-            if time() - start_time > timeout: return
+            if time() - start_time > timeout: 
+                print(f'{Fore.YELLOW}回调查询失败')
+                return
     except: print(f'{Fore.YELLOW}回调查询失败')
     
     
@@ -334,7 +340,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
             for judgeCase in judgeCaseList:
                 hash_value = hashlib.md5((judgeCase[0].replace('\n', '')).encode()).hexdigest()
                 # print(hash_value)
-                if judgeCase[1][-3:] == '...': return
+                # if judgeCase[1][-3:] == '...': return
                 if is_first_if:
                     KillerCode += f'a=="{hash_value}"'
                     is_first_if = False
@@ -433,11 +439,11 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
             sleep(0.5)
             textarea = driver.find_element(By.XPATH, "//textarea[last()]")
             textarea.click()
-            for _ in [str(problem)[i:i+5] for i in range(0, len(str(problem)), 5)]:
+            for _ in [str(problem)[i:i+7] for i in range(0, len(str(problem)), 7)]:
                 textarea.send_keys(_)
             sleep(0.5)
             textarea.send_keys("\n")
-            sleep(5)
+            sleep(7)
             if not is_page_stable(driver):
                 print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
                 driver.refresh()
