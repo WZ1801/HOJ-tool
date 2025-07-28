@@ -79,7 +79,7 @@ def main():
     mode = None
     while mode != '4':
         system('cls')
-        print(Fore.BLUE + '欢迎使用HOJtool v3.2！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
+        print(Fore.BLUE + '欢迎使用HOJtool v3.2！\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
         if mode == '1':
