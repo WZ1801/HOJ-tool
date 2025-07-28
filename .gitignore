@@ -1,10 +1,11 @@
-#test
+# test
 test*
 
-#my user data
+# my user data
 *user_data*
+.vscode
 
-#ASC certificate
+# ASC certificate
 *.ASC
 
 # Byte-compiled / optimized / DLL files
