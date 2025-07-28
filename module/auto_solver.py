@@ -76,16 +76,19 @@ def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 10, interval: f
     """
     driver.timeouts.implicit_wait = 0.5
     start_time = time()
-    while time() - start_time < timeout:
+    while True:
+        if time() - start_time > timeout:
+            return False
         current_hash = _get_page_hash(driver)
         sleep(interval)
         try:
             driver.find_element(By.XPATH, '//button[@class="size-32px rounded-full cursor-pointer flex justify-center items-center border-1px  bg-[#fff] hover:bg-[#F6F7F9] border-[rgba(0,0,0,0.1)] absolute -top-12px transform -translate-y-full"]').click()
+            current_hash = _get_page_hash(driver)
         except: pass
         new_hash = _get_page_hash(driver)
         if current_hash == new_hash:
             break
-    return current_hash == _get_page_hash(driver)
+    return True
 
 # 获取页面的哈希值
 def _get_page_hash(driver: webdriver.Chrome) -> str:
@@ -132,7 +135,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'})
         problem = response.json()['data']['problem']
         problem_str = (
-            f"请编写可运行完整程序,描述中\n表示为换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
+            f"请编写可运行完整程序,以下描述\n代表换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
             .replace("\r", "")
             .replace("<code>", "")
             .replace("</code>", "")
@@ -141,6 +144,9 @@ def get_problem_saying(pid: str, notes: str) -> str:
             .replace("<output>", "")
             .replace("</output>", "")
             .replace("\\", "")
+            .replace("<pre>", "")
+            .replace("</pre>", "")
+            .replace("$", "")
         )
         example_str = example_conversion_format(problem['examples'])
         if problem['isFileIO']:
@@ -315,14 +321,21 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
             )
             sleep(interval)
             if time() - start_time > timeout: 
-                print(f'{Fore.YELLOW}回调查询失败')
+                print(f'{Fore.YELLOW}回调查询失败:超时')
                 return
-    except: print(f'{Fore.YELLOW}回调查询失败')
+    except Exception as e:
+        print(f'{Fore.YELLOW}回调查询失败:{e}{Style.RESET_ALL}')
+        return
     
-    
+    response = requests.get(
+        f'{user_data["OJ"]["APIURL"]}/api/get-submission-detail',
+        params=params,
+        cookies=cookies,
+        headers=headers,
+    )
     # print(json.dumps(response.json(), indent=2))
     try:
-        if response.json()['data']['submission']['status'] != 0:
+        if str(response.json()['data']['submission']['status']) != '0':
             print(f'{Fore.YELLOW}{pid}:AI Wrong Answer!{Style.RESET_ALL}')
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
@@ -350,12 +363,15 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
             # print(KillerCode)
             if is_first_if:
                 print(f'{Fore.YELLOW}回调提交失败: 数据点过长{Style.RESET_ALL}')
+                return
             # import pyperclip
             # pyperclip.copy(KillerCode)
             # response = requests.post(f'{user_data["OJ"]["APIURL"]}/api/submit-problem-judge', headers=headers, data=json.dumps(data))
             # print(response.json())
             submit_list.append([KillerCode, JSESSIONID, pid, 'Python3', False])
-            print(f'{Fore.GREEN}{pid}回调抢救成功{Style.RESET_ALL}')
+            print(f'{Fore.GREEN}{pid}回调抢救成功,结果未知{Style.RESET_ALL}')
+        else:
+            print(f'{Fore.GREEN}{pid}:AI Accepted!{Style.RESET_ALL}')
             
     except Exception as e: 
         print(f'{Fore.YELLOW}回调提交失败: {e}{Style.RESET_ALL}')
