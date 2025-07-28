@@ -1,0 +1,1 @@
+python -m nuitka --standalone --onefile --main="main.py" --product-name="HOJ tool" --product-version="3.2" --copyright="EchoSearch-MIT" 
