@@ -323,7 +323,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     # print(json.dumps(response.json(), indent=2))
     try:
         if response.json()['data']['submission']['status'] != 0:
-            print(f'{Fore.YELLOW}{pid}AI WA!{Style.RESET_ALL}')
+            print(f'{Fore.YELLOW}{pid}:AI Wrong Answer!{Style.RESET_ALL}')
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
                 params=params,
@@ -348,7 +348,8 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
                     KillerCode += f'or a=="{hash_value}"'
                 KillerCode += f'and print("{judgeCase[1].replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'').replace('\"', '\\\"')}")'
             # print(KillerCode)
-            if is_first_if: return
+            if is_first_if:
+                print(f'{Fore.YELLOW}回调提交失败: 数据点过长{Style.RESET_ALL}')
             # import pyperclip
             # pyperclip.copy(KillerCode)
             # response = requests.post(f'{user_data["OJ"]["APIURL"]}/api/submit-problem-judge', headers=headers, data=json.dumps(data))
