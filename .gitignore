@@ -150,3 +150,8 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# nutika
+main.build/
+main.dist/
+main.onefile-build/
