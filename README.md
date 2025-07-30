@@ -15,6 +15,7 @@ HOJ Tool 是一个针对 HOJ 类在线评测系统(OJ)的辅助工具，主要�
 ### 方法一：源码安装
 
 1. 克隆仓库至本地
+
    ```shell
    git clone https://gitee.com/wzokee/oj-auto-problem-solver-bot.git
    ```
@@ -22,8 +23,8 @@ HOJ Tool 是一个针对 HOJ 类在线评测系统(OJ)的辅助工具，主要�
 2. 安装谷歌浏览器
 
 3. 安装谷歌浏览器对应的爬虫驱动（chromedriver）
-   - 下载地址1：https://googlechromelabs.github.io/chrome-for-testing/
-   - 下载地址2：http://chromedriver.storage.googleapis.com/index.html
+   - 下载地址1：<https://googlechromelabs.github.io/chrome-for-testing/>
+   - 下载地址2：<http://chromedriver.storage.googleapis.com/index.html>
 
 4. 安装 Python 第三方库
    - 运行 `install_packages.bat` 或手动安装依赖包
