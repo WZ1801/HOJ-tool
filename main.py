@@ -1,8 +1,6 @@
 print('加载中，请稍后\\^o^/')
-from selenium.webdriver.chrome.service import Service
-from colorama import Fore, Back, Style, init
 import module.auto_solver, module.ban_account, sys
-from selenium import webdriver
+from colorama import Fore, Back, Style, init
 from os import path as pt
 from os import system
 from json import dump
@@ -18,7 +16,10 @@ def get_user_data() -> None:
     user_data = {
         'OJ': {'URL': None, 'APIURL': None, 'username': None, 'password': None},
         'AI_URL': None,
-        'ChromeDriver_path': None
+        'Browser': {
+            'Type': None,
+            'Driver_path': None
+        }
     }
 
     def validate_url(url: str) -> bool:
@@ -62,10 +63,17 @@ def get_user_data() -> None:
             else:
                 print(Fore.RED + '无效的URL格式，请重新输入。' + Style.RESET_ALL)
 
-        while not user_data['ChromeDriver_path']:
-            chrome_driver_path = input('ChromeDriver路径:')
-            if validate_file_path(chrome_driver_path):
-                user_data['ChromeDriver_path'] = chrome_driver_path
+        while not user_data['Browser']['Type']:
+            browser_type = input('浏览器类型(Chrome/Edge/Firefox):').strip().lower()
+            if browser_type in ['chrome', 'edge', 'firefox']:
+                user_data['Browser']['Type'] = browser_type
+            else:
+                print(Fore.RED + '无效的浏览器类型，请重新输入。' + Style.RESET_ALL)
+
+        while not user_data['Browser']['Driver_path']:
+            driver_path = input('爬虫驱动路径:')
+            if validate_file_path(driver_path):
+                user_data['Browser']['Driver_path'] = driver_path
             else:
                 print(Fore.RED + '文件路径不存在，请重新输入。' + Style.RESET_ALL)
 

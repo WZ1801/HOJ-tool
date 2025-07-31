@@ -1,8 +1,6 @@
 import requests, pyperclip, hashlib, re, logging, sys, json
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from colorama import Fore, Back, Style, init
 from selenium.webdriver.common.by import By
 from selenium import webdriver
@@ -21,12 +19,6 @@ load_dotenv()
 # 禁用所有日志输出 
 logging.getLogger('tensorflow').disabled = True 
 logging.getLogger('selenium').setLevel(logging.CRITICAL)
-options = Options()
-options.add_argument("--log-level=3")
-options.add_argument("--disable-infobars")
-options.add_argument("excludeswitches")
-options.add_argument("--enable-automation")
-
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
 init(autoreset=True)
 
@@ -42,6 +34,53 @@ try:
 except FileNotFoundError:
     is_user_data_read = False
     user_data = None
+
+# 爬虫驱动初始化
+try:
+    driver_path = user_data['Browser']['Driver_path']
+    if not pt.exists(driver_path):
+        print(f"{Fore.RED}驱动路径不存在，请检查配置文件{Style.RESET_ALL}")
+    if user_data['Browser']['Type'] == 'chrome':
+        browser_type = 'chrome'
+        from selenium.webdriver.chrome.service import Service
+        from selenium.webdriver.chrome.options import Options
+    elif user_data['Browser']['Type'] == 'edge':
+        browser_type = 'edge'
+        from selenium.webdriver.edge.service import Service
+        from selenium.webdriver.edge.options import Options
+    elif user_data['Browser']['Type'] == 'Firefox':
+        browser_type = 'firefox'
+        from selenium.webdriver.firefox.service import Service
+        from selenium.webdriver.firefox.options import Options
+    else:
+        print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
+        system('pause')
+        exit()
+    options = Options()
+    options.add_argument("--log-level=3")
+    options.add_argument("--disable-infobars")
+    options.add_argument("excludeswitches")
+    options.add_argument("--enable-automation")
+except Exception as e:
+    print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
+    system('pause')
+    exit()
+
+# 获取driver
+def get_driver() -> webdriver.Chrome:
+    global user_data, options
+    if user_data['Browser']['Type'] == 'chrome':
+        service = Service(user_data['Browser']['Driver_path'])
+        return webdriver.Chrome(service=service, options=options)
+    elif user_data['Browser']['Type'] == 'edge':
+        service = Service(user_data['Browser']['Driver_path'])
+        return webdriver.Edge(service=service, options=options)
+    elif user_data['Browser']['Type'] == 'Firefox':
+        service = Service(user_data['Browser']['Driver_path'])
+        return webdriver.Firefox(service=service, options=options)
+    else:
+        print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
+
 # 示例转换格式
 def example_conversion_format(examples: str) -> str:
     """
@@ -377,8 +416,8 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
         print(f'{Fore.YELLOW}回调提交失败: {e}{Style.RESET_ALL}')
 
 def all_code() -> None:
-    global driver, user_data, options
-    driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
+    global driver, user_data
+    driver = get_driver()
 
     # 登录
     jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
@@ -404,13 +443,13 @@ def all_code() -> None:
         i += 1
 
 def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False) -> None:
-    global user_data, options
+    global user_data
     if not is_call:
         tids = input('请输入训练编号,用逗号隔开:')
         notes = input('备注:')  # 代码后添加的东西
         
         # 登录
-        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
+        driver = get_driver()
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
         print('请自行操作登录360bot')
@@ -432,10 +471,10 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
         driver.quit()
 
 def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False) -> None:
-    global options, user_data, submit_list
+    global user_data, submit_list
     if not is_call:
         pids = input("请输入题目编号，用逗号分隔：")
-        driver = webdriver.Chrome(service=Service(user_data['ChromeDriver_path']), options=options)
+        driver = get_driver()
 
         # 登录
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
