@@ -24,6 +24,7 @@ init(autoreset=True)
 
 # 提交相关
 last_submit_time = time()
+submit_T = None
 submit_list = []
 
 # 导入配置
@@ -32,8 +33,13 @@ try:
     with open(user_data_path, 'r', encoding='utf-8') as file:
         user_data = load(file)
 except FileNotFoundError:
-    is_user_data_read = False
-    user_data = None
+    print(f'{Fore.RED}未找到配置文件 {user_data_path}{Style.RESET_ALL}')
+    system('pause')
+    exit()
+except Exception as e:
+    print(f'{Fore.RED}读取用户数据时发生错误：{e}{Style.RESET_ALL}')
+    system('pause')
+    exit()
 
 # 爬虫驱动初始化
 try:
@@ -67,7 +73,7 @@ except Exception as e:
     exit()
 
 # 获取driver
-def get_driver() -> webdriver.Chrome:
+def get_driver():
     global user_data, options
     if user_data['Browser']['Type'] == 'chrome':
         service = Service(user_data['Browser']['Driver_path'])
@@ -273,7 +279,16 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     :return: JSESSIONID cookie值
     """
     driver.get(url)
-    driver.maximize_window()
+    # 尝试最大化窗口，如果失败则忽略
+    try:
+        driver.maximize_window()
+    except Exception as e:
+        print(f"{Fore.YELLOW}无法最大化窗口: {e}{Style.RESET_ALL}")
+        try:
+            driver.set_window_size(1920, 1080)
+        except Exception:
+            pass
+    
     driver.implicitly_wait(10)
     login_button = driver.find_element(By.XPATH, '//*[@id="header"]/ul/div[2]/button')
     login_button.click()
@@ -288,6 +303,7 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     submit_button.click()
     sleep(1)
     driver.refresh()
+    sleep(1)
     cookies = driver.get_cookies()
     jsessionid_cookie = next((cookie for cookie in cookies if cookie['name'] == 'JSESSIONID'), {}).get('value')
     return jsessionid_cookie
@@ -324,7 +340,7 @@ def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
         response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
         if response.status_code != 200:
             print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-            driver.quit()
+            # driver.quit()
             return False
         return response.json()['data']['submitId']
     except Exception as e:
@@ -398,7 +414,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
                     is_first_if = False
                 else:
                     KillerCode += f'or a=="{hash_value}"'
-                KillerCode += f'and print("{judgeCase[1].replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'').replace('\"', '\\\"')}")'
+                KillerCode += f'and print("{judgeCase[1].replace(chr(92), chr(92)*2).replace(chr(10), chr(92)+"n").replace(chr(39), chr(92)+chr(39)).replace(chr(34), chr(92)+chr(34))}")'
             # print(KillerCode)
             if is_first_if:
                 print(f'{Fore.YELLOW}回调提交失败: 数据点过长{Style.RESET_ALL}')
@@ -415,17 +431,33 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     except Exception as e: 
         print(f'{Fore.YELLOW}回调提交失败: {e}{Style.RESET_ALL}')
 
-def all_code() -> None:
-    global driver, user_data
+def all_code(is_web_call = False) -> None:
+    global driver, user_data, submit_T
+    if submit_T == None: 
+        submit_T = Thread(target=submit_code_thread)
+        submit_T.start()
+    
     driver = get_driver()
 
     # 登录
     jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
 
-    print('请自行操作登录360bot')
+    if not is_web_call:
+        print('请自行操作登录360bot')
     driver.get('https://bot.n.cn/')
-    system('pause')
-
+    if not is_web_call:
+        system('pause')
+    else:
+        while True:
+            sleep(0.5)
+            try:
+                response = requests.get("http://127.0.0.1:1146/api/auto_solver/status")
+                if response.status_code == 200 and response.json()['is_login_360ai'] == True:
+                    break
+            except Exception as e:
+                try:
+                    pass # 发送错误包
+                except: exit()
     headers = {
         'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
@@ -439,11 +471,18 @@ def all_code() -> None:
         if len(tids) == 0:
             break
         tids_str = ','.join(map(str, tids))
-        training_code(driver=driver, tids=tids_str, jsessionid_cookie=jsessionid_cookie, is_call=True)
+        training_code(driver=driver, tids=tids_str, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
         i += 1
+    if is_web_call:
+        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        driver.quit()
+        exit()
 
-def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False) -> None:
-    global user_data
+def training_code(driver = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False, is_web_call = False, web_call_mode = 1) -> None:
+    global user_data, submit_T
+    if submit_T == None: 
+        submit_T = Thread(target=submit_code_thread)
+        submit_T.start()
     if not is_call:
         tids = input('请输入训练编号,用逗号隔开:')
         notes = input('备注:')  # 代码后添加的东西
@@ -455,6 +494,22 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
         print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
         system('pause')
+    if is_web_call and web_call_mode == 2 and driver is None:
+        # 只有在driver为None时才需要重新初始化
+        # 登录
+        driver = get_driver()
+        jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
+        driver.get('https://bot.n.cn/')
+        while True:
+            sleep(0.5)
+            try:
+                response = requests.get("http://127.0.0.1:1146/api/auto_solver/status")
+                if response.status_code == 200 and response.json()['is_login_360ai'] == True:
+                    break
+            except Exception as e:
+                try:
+                    pass # 发送错误包
+                except: exit()
 
     tidlist = tids.split(',')
     if tidlist[0] != '':
@@ -466,11 +521,17 @@ def training_code(driver: webdriver.Chrome = None, tids: str = None, jsessionid_
                 print(f'{Fore.RED}获取训练题目ID时出错:{str(e)}{Style.RESET_ALL}')
                 continue
             # 调用 problem_code 处理每个 pid
-            problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True)
+            problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
     if not is_call:
         driver.quit()
+    if is_web_call and web_call_mode == 2:
+        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
 
-def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False) -> None:
+def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False, is_web_call = False, web_call_mode=1) -> None:
+    global submit_T
+    if submit_T == None: 
+        submit_T = Thread(target=submit_code_thread)
+        submit_T.start()
     global user_data, submit_list
     if not is_call:
         pids = input("请输入题目编号，用逗号分隔：")
@@ -482,6 +543,28 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
         print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
         system('pause')
+    if web_call_mode == 2 and is_web_call:
+        driver = get_driver()
+
+        # 登录
+        jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
+        driver.get('https://bot.n.cn/')
+
+        while True:
+            sleep(0.5)
+            try:
+                response = requests.get("http://127.0.0.1:1146/api/auto_solver/status")
+                if response.status_code == 200 and response.json()['is_login_360ai'] == True:
+                    break
+            except Exception as e:
+                try:
+                    pass # 发送错误包
+                except: exit()
+    if is_web_call:
+        if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
+            requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+            driver.quit()
+            exit()
 
     driver.get(user_data['AI_URL'])
     pidlist = pids.split(',')
@@ -513,9 +596,13 @@ def problem_code(driver: webdriver.Chrome = None, pids: str = None, notes: str =
             print(f"{formatted_time},pid:{pid}")
     if not is_call:
         driver.quit()
+    if is_web_call and web_call_mode == 2:
+        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+
 
 def main() -> None:
-    Thread(target=submit_code_thread).start()
+    submit_T = Thread(target=submit_code_thread)
+    submit_T.start()
     mode = None
     while(mode != '4'):
         print(Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.刷训练题目\n2.刷个题\n3.一键刷所有题\n4.退出\n' + Style.RESET_ALL)
