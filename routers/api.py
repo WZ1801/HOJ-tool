@@ -1,0 +1,186 @@
+"""
+API路由模块
+"""
+
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi import Request
+from os import path as pt
+from json import load
+from sys import argv
+router = APIRouter()
+user_data_path = pt.join(pt.dirname(pt.normpath(argv[0])), 'user_data.json')
+
+auto_solver_status = {
+    'is_running': False,
+    'stop_flag': False,
+    'is_login_360ai': False
+}
+
+@router.get("/config/get", summary="获取用户配置")
+async def get_config():
+    """获取用户配置信息"""
+    try:
+        with open(user_data_path, 'r', encoding='utf-8') as file:
+            user_data = load(file)
+    except Exception as e:
+        return {"status": "error", "message": f"读取用户数据时发生错误：{e}"}
+    return user_data
+
+
+    
+@router.post("/config/save", summary="保存用户配置")
+async def save_config(request: Request):
+    import json
+    try:
+        # 检查请求体是否为空
+        request_data = await request.json()
+        if not request_data:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "msg": "请求体不能为空"}
+            )
+        config = json.dumps(request_data, ensure_ascii=False, indent=2)
+        with open(user_data_path, 'w', encoding='utf-8') as file:
+            file.write(config)
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "msg": "配置保存成功"}
+        )
+    except json.JSONDecodeError as e:
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "msg": f"JSON格式错误：{e}"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"保存用户数据时发生错误：{e}"}
+        )
+
+@router.get("/auto_solver/all_code", summary="开始刷全部题")
+async def all_code_() -> JSONResponse:
+    if auto_solver_status['is_running']: return JSONResponse(
+        status_code=400,
+        content={"status": "error", "msg": "当前有任务正在运行"}
+    )
+    try:
+        import module.auto_solver, threading
+        act = threading.Thread(target=module.auto_solver.all_code, args=(True,))
+        act.start()
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f'发生未知错误:{e}'}
+        )
+    auto_solver_status['is_running'] = True
+    auto_solver_status['is_login_360ai'] = False
+    auto_solver_status['stop_flag']  = False
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success", "msg": "已启动刷题线程"}
+    )
+
+@router.post("/auto_solver/training_code", summary="开始刷训练题")
+async def training_code_(request: Request) -> JSONResponse:
+    if auto_solver_status['is_running']: return JSONResponse(
+        status_code=400,
+        content={"status": "error", "msg": "当前有任务正在运行"}
+    )
+    try:
+        import module.auto_solver, threading
+        resjson = await request.json()
+        act = threading.Thread(target=module.auto_solver.training_code, args=(None, resjson['tids'], None, resjson['notes'], True, True, 2))
+        act.start()
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f'发生未知错误:{e}'}
+        )
+    auto_solver_status['is_running'] = True
+    auto_solver_status['is_login_360ai'] = False
+    auto_solver_status['stop_flag']  = False
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success", "msg": "已启动刷题线程"}
+    )
+
+@router.post("/auto_solver/problem_code", summary="开始刷个题")
+async def problem_code_(request: Request) -> JSONResponse:
+    if auto_solver_status['is_running']: return JSONResponse(
+        status_code=400,
+        content={"status": "error", "msg": "当前有任务正在运行"}
+    )
+    try:
+        import module.auto_solver, threading
+        resjson = await request.json()
+        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, resjson['pids'], resjson['notes'], None, True, True, 2))
+        act.start()
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f'发生未知错误:{e}'}
+        )
+    auto_solver_status['is_running'] = True
+    auto_solver_status['is_login_360ai'] = False
+    auto_solver_status['stop_flag']  = False
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success", "msg": "已启动刷题线程"}
+    )
+
+@router.get("/auto_solver/status", summary="刷题状态")
+async def check_login_360ai() -> JSONResponse:
+    """获取刷题状态"""
+    try:
+        return JSONResponse(
+            status_code=200,
+            content=auto_solver_status
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"获取状态失败: {str(e)}"}
+        )
+    
+@router.get("/auto_solver/login_360ai", summary="登录360AIflag立")
+async def login_360ai() -> JSONResponse:
+    try:
+        auto_solver_status['is_login_360ai'] = True
+    except Exception as e:
+       return JSONResponse(
+           status_code=500,
+           content={"status": "error", "msg": str(e)}
+       )
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success"}
+    )
+
+@router.get("/auto_solver/stop", summary="停止刷题")
+async def stop_auto_solver() -> JSONResponse:
+    try:
+        auto_solver_status["stop_flag"] = True
+    except Exception as e:
+       return JSONResponse(
+           status_code=500,
+           content={"status": "error", "msg": str(e)}
+       )
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success"}
+    )
+
+@router.get("/auto_solver/stopp", summary="is_running倒")
+async def stopp() -> JSONResponse:
+    try:
+        auto_solver_status["is_running"] = False
+    except Exception as e:
+       return JSONResponse(
+           status_code=500,
+           content={"status": "error", "msg": str(e)}
+       )
+    return JSONResponse(
+        status_code=200,
+        content={"status": "success"}
+    )
