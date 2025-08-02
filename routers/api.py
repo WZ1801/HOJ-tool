@@ -184,3 +184,83 @@ async def stopp() -> JSONResponse:
         status_code=200,
         content={"status": "success"}
     )
+
+@router.post("/ban_account/ban_account", summary="封禁账号")
+async def ban_account_(request: Request) -> JSONResponse:
+    try:
+        resjson = await request.json()
+        if 'mode' not in resjson:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "msg": "请求体缺少必要字段"}
+            )
+        mode = resjson['mode']
+        if mode == 'assign' and 'username' not in resjson:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "msg": "请求体缺少必要字段"}
+            )
+        if mode == 'all' and 'white_list' not in resjson:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "msg": "请求体缺少必要字段"}
+            )
+        from threading import Thread
+        if mode == 'all':
+            import module.ban_account
+            Thread(target=module.ban_account.ban_account, args=(str(mode), resjson['white_list'])).start()
+        elif mode == 'assign':
+            import module.ban_account
+            Thread(target=module.ban_account.ban_account, args=(str(mode), resjson['username'])).start()
+        
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"封禁账号失败: {str(e)}"}
+        )
+
+from collections import deque
+import asyncio
+
+# 限制日志数量，使用线程安全的双端队列
+logs = deque(maxlen=10000)  # 最多保存1000条日志
+logs_lock = asyncio.Lock()
+
+@router.post("/ban_account/log", summary="记录日志")
+async def log1(request: Request) -> JSONResponse:
+    try:
+        resjson = await request.json()
+        async with logs_lock:
+            logs.append(resjson)
+        import json
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "loglong": len(json.dumps(resjson))}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"记录日志失败: {str(e)}"}
+        )
+    
+@router.get("/ban_account/get_logs", summary="读取日志")
+async def get_log1() -> JSONResponse:
+    try:
+        import json
+        async with logs_lock:
+            logs_copy = list(logs)
+        return_log = json.dumps(logs_copy, ensure_ascii=False) if logs_copy else ""
+        logs.clear()
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "log": return_log}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"获取日志失败: {str(e)}"}
+        )
