@@ -1,20 +1,26 @@
-import requests, pyperclip, hashlib, re, logging, sys, json
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from colorama import Fore, Back, Style, init
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from dotenv import load_dotenv
-from datetime import datetime
+from urllib.parse import quote
+from time import sleep, time
 from threading import Thread
-from json import load, dumps
 from os import path as pt
-from time import sleep
 from os import system
-from time import time
+import requests
+import pyperclip
+import hashlib
+import logging
+import json
+import sys
+import re
 
 # 加载环境变量
 load_dotenv()
+
+log_mode = 1  # 是否是网页请求模式,2启用,1禁用
 
 # 禁用所有日志输出 
 logging.getLogger('tensorflow').disabled = True 
@@ -29,9 +35,10 @@ submit_list = []
 
 # 导入配置
 is_user_data_read = True
+user_data = None
 try:
     with open(user_data_path, 'r', encoding='utf-8') as file:
-        user_data = load(file)
+        user_data = json.load(file)
 except FileNotFoundError:
     print(f'{Fore.RED}未找到配置文件 {user_data_path}{Style.RESET_ALL}')
     system('pause')
@@ -42,39 +49,76 @@ except Exception as e:
     exit()
 
 # 爬虫驱动初始化
+options = None
 try:
     driver_path = user_data['Browser']['Driver_path']
     if not pt.exists(driver_path):
         print(f"{Fore.RED}驱动路径不存在，请检查配置文件{Style.RESET_ALL}")
+        
     if user_data['Browser']['Type'] == 'chrome':
-        browser_type = 'chrome'
         from selenium.webdriver.chrome.service import Service
         from selenium.webdriver.chrome.options import Options
     elif user_data['Browser']['Type'] == 'edge':
-        browser_type = 'edge'
         from selenium.webdriver.edge.service import Service
         from selenium.webdriver.edge.options import Options
     elif user_data['Browser']['Type'] == 'Firefox':
-        browser_type = 'firefox'
         from selenium.webdriver.firefox.service import Service
         from selenium.webdriver.firefox.options import Options
     else:
         print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
         system('pause')
         exit()
+        
     options = Options()
     options.add_argument("--log-level=3")
     options.add_argument("--disable-infobars")
     options.add_argument("excludeswitches")
     options.add_argument("--enable-automation")
+    
 except Exception as e:
     print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
     system('pause')
     exit()
 
+def send_log(type: str = 'info', message: str = '', mode: int = 1) -> None:
+    try:
+        match type:
+            case 'info':
+                match mode:
+                    case 1:
+                        print(message)
+                    case 2:
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'info', 'message': message})
+            case 'success':
+                match mode:
+                    case 1:
+                        print(Fore.GREEN + message + Style.RESET_ALL)
+                    case 2:
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'success', 'message': message})
+            case 'warning':
+                match mode:
+                    case 1:
+                        print(Fore.YELLOW + message + Style.RESET_ALL)
+                    case 2:
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'warning', 'message': message})
+            case 'error':
+                match mode:
+                    case 1:
+                        print(Fore.RED + message + Style.RESET_ALL)
+                    case 2:
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'error', 'message': message})
+            case 'debug':
+                match mode:
+                    case 1:
+                        print(Fore.BLUE + message + Style.RESET_ALL)
+                    case 2:
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'debug', 'message': message})
+    except: 
+        pass
+
 # 获取driver
 def get_driver():
-    global user_data, options
+    global user_data, options, log_mode
     if user_data['Browser']['Type'] == 'chrome':
         service = Service(user_data['Browser']['Driver_path'])
         return webdriver.Chrome(service=service, options=options)
@@ -85,7 +129,7 @@ def get_driver():
         service = Service(user_data['Browser']['Driver_path'])
         return webdriver.Firefox(service=service, options=options)
     else:
-        print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
+        send_log('error', '浏览器类型错误，请重新配置并检查配置文件', log_mode)
 
 # 示例转换格式
 def example_conversion_format(examples: str) -> str:
@@ -129,7 +173,8 @@ def is_page_stable(driver: webdriver.Chrome, timeout: int = 60 * 10, interval: f
         try:
             driver.find_element(By.XPATH, '//button[@class="size-32px rounded-full cursor-pointer flex justify-center items-center border-1px  bg-[#fff] hover:bg-[#F6F7F9] border-[rgba(0,0,0,0.1)] absolute -top-12px transform -translate-y-full"]').click()
             current_hash = _get_page_hash(driver)
-        except: pass
+        except: 
+            pass
         new_hash = _get_page_hash(driver)
         if current_hash == new_hash:
             break
@@ -146,25 +191,6 @@ def _get_page_hash(driver: webdriver.Chrome) -> str:
     page_source = driver.page_source
     return hashlib.md5(page_source.encode()).hexdigest()
 
-# 添加cookie
-def add_driver_cookie(driver: webdriver.Chrome, website: str, cookies: list) -> None:
-    """
-    添加指定域名下的所有cookie
-
-    :param driver: Selenium WebDriver实例
-    :param website: 要添加cookie的网址
-    :param cookies: 要添加的cookie列表
-    """
-    try:
-        driver.get(website)
-        driver.delete_all_cookies()
-        for cookie in cookies:
-            if 'name' in cookie and 'value' in cookie and 'domain' in cookie:
-                cookie['path'] = '/'
-                driver.add_cookie(cookie)
-    except Exception as e:
-        print(Fore.RED + f"添加cookie时错误:{str(e)}" + Style.RESET_ALL)
-
 # 获取题目+AI话术
 def get_problem_saying(pid: str, notes: str) -> str:
     '''
@@ -174,13 +200,40 @@ def get_problem_saying(pid: str, notes: str) -> str:
     :param notes: 额外提示
     :return: AI话术
     '''
-    global user_data
-    problem_url = f"{user_data['OJ']['APIURL']}/api/get-problem-detail?problemId={pid}"
+    global user_data, log_mode
+    problem_url = f"{user_data['OJ']['APIURL']}/api/get-problem-detail?problemId={quote(pid)}"
     try:
         response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'})
-        problem = response.json()['data']['problem']
+        
+        # 检查HTTP响应状态
+        if response.status_code != 200:
+            send_log('error', f'获取问题失败，HTTP状态码: {response.status_code}', log_mode)
+            return ""
+        
+        # 解析JSON响应
+        response_data = response.json()
+        
+        # 检查响应结构
+        if not response_data or 'data' not in response_data or 'problem' not in response_data['data']:
+            send_log('error', f'响应数据结构不正确: {response_data}', log_mode)
+            return ""
+        
+        problem = response_data['data']['problem']
+        
+        # 检查problem是否为None
+        if problem is None:
+            send_log('error', '获取到的problem数据为None', log_mode)
+            return ""
+        
+        # 检查必要的字段是否存在
+        required_fields = ['description', 'input', 'output', 'examples']
+        for field in required_fields:
+            if field not in problem:
+                send_log('error', f'problem数据缺少必要字段: {field}', log_mode)
+                return ""
+        
         problem_str = (
-            f"请编写可运行完整程序,以下描述\n代表换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
+            f"请编写可运行完整程序,以下描述\\n代表换行:{problem['description']}输入:{problem['input']}输出:{problem['output']}"
             .replace("\r", "")
             .replace("<code>", "")
             .replace("</code>", "")
@@ -194,18 +247,23 @@ def get_problem_saying(pid: str, notes: str) -> str:
             .replace("$", "")
         )
         example_str = example_conversion_format(problem['examples'])
-        if problem['isFileIO']:
-            fileIOstr = f"程序为文件IO输入输出，输入文件名为：{problem['ioReadFileName']}，输出文件名为：{problem['ioWriteFileName']}。"
+        if problem.get('isFileIO', False):
+            fileIOstr = f"程序为文件IO输入输出，输入文件名为：{problem.get('ioReadFileName', '')}，输出文件名为：{problem.get('ioWriteFileName', '')}。"
         else:
             fileIOstr = ""
         return (
             f"{problem_str}。{fileIOstr}{example_str}。帮我编写C++程序，不要有其他赘述，并直接输出程序,代码中不要有注释，可开头直接声明std命名空间，尽可能优化，达到数据极限。{notes}"
             .replace("\n", "\\n")
         )
-    except Exception as e:
-        print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
+    except requests.RequestException as e:
+        send_log('error', f'网络请求出错: {str(e)}', log_mode)
         return ""
-
+    except KeyError as e:
+        send_log('error', f'响应数据缺少键值: {str(e)}', log_mode)
+        return ""
+    except Exception as e:
+        send_log('error', f'获取问题时出错: {str(e)}', log_mode)
+        return ""
 
 # 获取训练集题目ID
 def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
@@ -217,27 +275,31 @@ def get_training_pids(tid: int, jsessionid_cookie: str) -> list:
     :return: 训练集题目ID列表
     '''
     global user_data
-    headers = {
-        'Content-Type': 'application/json',
-        'Cookie': f'JSESSIONID={jsessionid_cookie}',
-        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
-    }
-    response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
-    internalpids = [i['pid'] for i in response['data']]
+    try:
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'JSESSIONID={jsessionid_cookie}',
+            'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
+        }
+        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-problem-list?tid={tid}", headers=headers).json()
+        internalpids = [i['pid'] for i in response['data']]
 
-    data={
-        'cid': 'null',
-        'containsEnd': 'false',
-        'gid': 'null',
-        'isContestProblemList': 'false',
-        'pidList': internalpids
-    }
-    response2 = requests.post(url=f"{user_data['OJ']['APIURL']}/api/get-user-problem-status", headers=headers, data=json.dumps(data)).json()
-    pids = []
-    for i in response['data']:
-        if response2['data'][str(i['pid'])]['status'] != 0:
-            pids.append(i['problemId'])
-    return pids
+        data = {
+            'cid': 'null',
+            'containsEnd': 'false',
+            'gid': 'null',
+            'isContestProblemList': 'false',
+            'pidList': internalpids
+        }
+        response2 = requests.post(url=f"{user_data['OJ']['APIURL']}/api/get-user-problem-status", headers=headers, json=data).json()
+        pids = []
+        for i in response['data']:
+            if response2['data'][str(i['pid'])]['status'] != 0:
+                pids.append(i['problemId'])
+        return pids
+    except Exception as e:
+        send_log('error', f'训练获取题目时出错:{e}', 1)
+        return []
 
 # 复制代码
 def copy_code(driver: webdriver.Chrome) -> None:
@@ -254,7 +316,8 @@ def copy_code(driver: webdriver.Chrome) -> None:
             driver.execute_script("arguments[0].scrollIntoView(true);", last_target_div)
             last_target_div.click()
     except Exception as e:
-        print(Fore.YELLOW + '复制时出错,尝试抢修' + Style.RESET_ALL)
+        global log_mode
+        send_log('warning', '复制时出错,尝试抢修', log_mode)
         try:
             driver.refresh()
             driver.implicitly_wait(10)
@@ -265,7 +328,7 @@ def copy_code(driver: webdriver.Chrome) -> None:
                 driver.execute_script("arguments[0].scrollIntoView(true);", last_target_div)
                 last_target_div.click()
         except Exception as e:
-            print(Fore.RED + '抢修失败' + str(e) + Style.RESET_ALL)
+            send_log('error', '抢修失败', log_mode)
 
 # 登录并获取JSESSIONID cookie
 def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, password: str) -> str:
@@ -283,7 +346,8 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     try:
         driver.maximize_window()
     except Exception as e:
-        print(f"{Fore.YELLOW}无法最大化窗口: {e}{Style.RESET_ALL}")
+        global log_mode
+        send_log("warning", f"无法最大化窗口:{e}", log_mode)
         try:
             driver.set_window_size(1920, 1080)
         except Exception:
@@ -312,7 +376,6 @@ def submit_code_thread() -> None:
     global last_submit_time, submit_list
     while True:
         if time() - last_submit_time > 10 and len(submit_list) > 0:
-            # print(submit_list)
             submit_codee = submit_code(*submit_list[0][:4])
             last_submit_time = time()
             if submit_list[0][4] == True:
@@ -322,7 +385,7 @@ def submit_code_thread() -> None:
 
 def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
     try:
-        global user_data
+        global user_data, log_mode
         headers = {
             'Content-Type': 'application/json',
             'Cookie': f'JSESSIONID={JESSIONID}',
@@ -337,20 +400,19 @@ def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
             'pid': pid,
             'tid': None
         }
-        response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, data=dumps(data))
+        response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, json=data)
         if response.status_code != 200:
-            print(Fore.RED + f'提交请求异常,status:{response.status_code}' + Style.RESET_ALL)
-            # driver.quit()
+            send_log('error', f'提交代码请求失败,状态码：{response.status_code}', log_mode)
             return False
         return response.json()['data']['submitId']
     except Exception as e:
-        print(f'{Fore.RED}提交代码失败{e}{Style.RESET_ALL}')
+        send_log('warning', f'提交代码失败{e}', log_mode)
         return False
 
 def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int = 30, interval: float = 1): 
     '''回调提交'''
     
-    global user_data
+    global user_data, log_mode
     cookies = {
         'JSESSIONID': f'{JSESSIONID}',
     }
@@ -367,7 +429,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     response = None
     start_time = time()
     try:
-        while response == None or response.json()['data']['submission']['status'] == 7:
+        while response is None or response.json()['data']['submission']['status'] == 7:
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-submission-detail',
                 params=params,
@@ -375,11 +437,11 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
                 headers=headers,
             )
             sleep(interval)
-            if time() - start_time > timeout: 
-                print(f'{Fore.YELLOW}回调查询失败:超时')
+            if time() - start_time > timeout:
+                send_log('warning', f'回调查询超时', log_mode)
                 return
     except Exception as e:
-        print(f'{Fore.YELLOW}回调查询失败:{e}{Style.RESET_ALL}')
+        send_log('warning', f'回调查询失败:{e}', log_mode)
         return
     
     response = requests.get(
@@ -388,10 +450,9 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
         cookies=cookies,
         headers=headers,
     )
-    # print(json.dumps(response.json(), indent=2))
     try:
         if str(response.json()['data']['submission']['status']) != '0':
-            print(f'{Fore.YELLOW}{pid}:AI Wrong Answer!{Style.RESET_ALL}')
+            send_log('warning', f'{pid}:AI Wrong Answer!', log_mode)
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
                 params=params,
@@ -401,39 +462,33 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
             judgeCaseList = []
             for judgeCase in response.json()['data']['judgeCaseList']:
                 judgeCaseList.append((judgeCase['inputData'], judgeCase['outputData']))
-            # print(judgeCaseList)
             
             KillerCode = 'import hashlib,sys\na=hashlib.md5(sys.stdin.read().replace(\'\\n\', \'\').encode()).hexdigest()\n'
             is_first_if = True
             for judgeCase in judgeCaseList:
                 hash_value = hashlib.md5((judgeCase[0].replace('\n', '')).encode()).hexdigest()
-                # print(hash_value)
-                # if judgeCase[1][-3:] == '...': return
                 if is_first_if:
                     KillerCode += f'a=="{hash_value}"'
                     is_first_if = False
                 else:
                     KillerCode += f'or a=="{hash_value}"'
                 KillerCode += f'and print("{judgeCase[1].replace(chr(92), chr(92)*2).replace(chr(10), chr(92)+"n").replace(chr(39), chr(92)+chr(39)).replace(chr(34), chr(92)+chr(34))}")'
-            # print(KillerCode)
-            if is_first_if:
-                print(f'{Fore.YELLOW}回调提交失败: 数据点过长{Style.RESET_ALL}')
-                return
-            # import pyperclip
-            # pyperclip.copy(KillerCode)
-            # response = requests.post(f'{user_data["OJ"]["APIURL"]}/api/submit-problem-judge', headers=headers, data=json.dumps(data))
-            # print(response.json())
-            submit_list.append([KillerCode, JSESSIONID, pid, 'Python3', False])
-            print(f'{Fore.GREEN}{pid}回调抢救成功,结果未知{Style.RESET_ALL}')
-        else:
-            print(f'{Fore.GREEN}{pid}:AI Accepted!{Style.RESET_ALL}')
             
-    except Exception as e: 
-        print(f'{Fore.YELLOW}回调提交失败: {e}{Style.RESET_ALL}')
+            if is_first_if:
+                send_log('warning', f'回调提交失败: 数据点过长', log_mode)
+                return
 
-def all_code(is_web_call = False) -> None:
-    global driver, user_data, submit_T
-    if submit_T == None: 
+            submit_list.append([KillerCode, JSESSIONID, pid, 'Python3', False])
+            send_log('success', f'回调抢救成功,结果未知', log_mode)
+        else:
+            send_log('success', f'AI Accepted!', log_mode)
+            
+    except Exception as e:
+        send_log('warning', f'回调提交失败: {e}', log_mode)
+
+def all_code(is_web_call=False) -> None:
+    global driver, user_data, submit_T, log_mode
+    if submit_T is None:
         submit_T = Thread(target=submit_code_thread)
         submit_T.start()
     
@@ -444,10 +499,13 @@ def all_code(is_web_call = False) -> None:
 
     if not is_web_call:
         print('请自行操作登录360bot')
+        
     driver.get('https://bot.n.cn/')
+    
     if not is_web_call:
         system('pause')
     else:
+        log_mode = 2
         while True:
             sleep(0.5)
             try:
@@ -455,9 +513,8 @@ def all_code(is_web_call = False) -> None:
                 if response.status_code == 200 and response.json()['is_login_360ai'] == True:
                     break
             except Exception as e:
-                try:
-                    pass # 发送错误包
-                except: exit()
+                exit()
+                
     headers = {
         'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
@@ -473,16 +530,21 @@ def all_code(is_web_call = False) -> None:
         tids_str = ','.join(map(str, tids))
         training_code(driver=driver, tids=tids_str, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
         i += 1
+        
     if is_web_call:
-        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        try:
+            requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        except:
+            pass
         driver.quit()
         exit()
 
-def training_code(driver = None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False, is_web_call = False, web_call_mode = 1) -> None:
-    global user_data, submit_T
-    if submit_T == None: 
+def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False, is_web_call=False, web_call_mode=1) -> None:
+    global user_data, submit_T, log_mode
+    if submit_T is None: 
         submit_T = Thread(target=submit_code_thread)
         submit_T.start()
+        
     if not is_call:
         tids = input('请输入训练编号,用逗号隔开:')
         notes = input('备注:')  # 代码后添加的东西
@@ -494,8 +556,9 @@ def training_code(driver = None, tids: str = None, jsessionid_cookie: str = None
         print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
         system('pause')
+        
     if is_web_call and web_call_mode == 2 and driver is None:
-        # 只有在driver为None时才需要重新初始化
+        log_mode = 2
         # 登录
         driver = get_driver()
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
@@ -508,30 +571,39 @@ def training_code(driver = None, tids: str = None, jsessionid_cookie: str = None
                     break
             except Exception as e:
                 try:
-                    pass # 发送错误包
-                except: exit()
+                    pass  # 发送错误包
+                except: 
+                    exit()
 
     tidlist = tids.split(',')
     if tidlist[0] != '':
         for tid in tidlist:
-            print('start,tid:', str(tid))
+            send_log('info', f'开始训练:{tid}', log_mode)
             try:
                 pids = get_training_pids(tid, jsessionid_cookie)
             except Exception as e:
-                print(f'{Fore.RED}获取训练题目ID时出错:{str(e)}{Style.RESET_ALL}')
+                send_log('error', f'获取训练题目ID时出错:{str(e)}', log_mode)
                 continue
             # 调用 problem_code 处理每个 pid
             problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
+            
     if not is_call:
         driver.quit()
+        
     if is_web_call and web_call_mode == 2:
-        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        try:
+            requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        except:
+            pass
 
-def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False, is_web_call = False, web_call_mode=1) -> None:
+def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False, is_web_call=False, web_call_mode=1) -> None:
+    global log_mode
+    # 提交代码线程
     global submit_T
-    if submit_T == None: 
+    if submit_T is None: 
         submit_T = Thread(target=submit_code_thread)
         submit_T.start()
+    
     global user_data, submit_list
     if not is_call:
         pids = input("请输入题目编号，用逗号分隔：")
@@ -543,8 +615,10 @@ def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_co
         print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
         system('pause')
+        
     if web_call_mode == 2 and is_web_call:
         driver = get_driver()
+        log_mode = 2
 
         # 登录
         jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
@@ -558,13 +632,18 @@ def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_co
                     break
             except Exception as e:
                 try:
-                    pass # 发送错误包
-                except: exit()
+                    pass  # 发送错误包
+                except: 
+                    exit()
+                    
     if is_web_call:
-        if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
-            requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
-            driver.quit()
-            exit()
+        try:
+            if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
+                requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+                driver.quit()
+                exit()
+        except:
+            pass
 
     driver.get(user_data['AI_URL'])
     pidlist = pids.split(',')
@@ -573,7 +652,7 @@ def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_co
             try:
                 problem = get_problem_saying(pid, notes)
             except Exception as e:
-                print(Fore.RED + f'获取问题时出错:{str(e)}' + Style.RESET_ALL)
+                send_log('error', f'获取问题时出错:{str(e)}', log_mode)
                 continue
             sleep(0.5)
             textarea = driver.find_element(By.XPATH, "//textarea[last()]")
@@ -584,27 +663,29 @@ def problem_code(driver = None, pids: str = None, notes: str = '', jsessionid_co
             textarea.send_keys("\n")
             sleep(7)
             if not is_page_stable(driver):
-                print(Fore.RED + "页面不稳定超时" + Style.RESET_ALL)
+                send_log("error", "页面不稳定超时", log_mode)
                 driver.refresh()
                 continue
             copy_code(driver)
             sleep(0.3)
             code = pyperclip.paste()
             submit_list.append([code, jsessionid_cookie, pid, 'C++', True])
-            now = datetime.now()
-            formatted_time = now.strftime("%H:%M:%S")
-            print(f"{formatted_time},pid:{pid}")
+            
     if not is_call:
         driver.quit()
+        
     if is_web_call and web_call_mode == 2:
-        requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
-
+        try:
+            requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
+        except:
+            pass
 
 def main() -> None:
+    global submit_T
     submit_T = Thread(target=submit_code_thread)
     submit_T.start()
     mode = None
-    while(mode != '4'):
+    while mode != '4':
         print(Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.刷训练题目\n2.刷个题\n3.一键刷所有题\n4.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
@@ -647,5 +728,8 @@ def main() -> None:
                 print(f'{Fore.YELLOW}未导入配置,请先配置信息{Style.RESET_ALL}')
                 system('pause')
                 system('cls')
+        elif mode == '4':
+            exit()
+
 if __name__ == '__main__':
     main()
