@@ -17,6 +17,10 @@ auto_solver_status = {
     'is_login_360ai': False
 }
 
+@router.get("/amns", summary="啊米诺斯！")
+async def amns():
+    return {"status": "success"}
+
 @router.get("/config/get", summary="获取用户配置")
 async def get_config():
     """获取用户配置信息"""
