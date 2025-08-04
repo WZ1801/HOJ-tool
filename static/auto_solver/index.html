@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动刷题 - HOJ Tool</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/auto_solver/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><i class="bi bi-robot"></i> 自动刷题</h1>
+            <p>AI辅助自动解答OJ平台编程题目</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="auto-solver">
+            <div class="solve-options">
+                <!-- 刷题选项 -->
+                <div class="solve-section" id="singleProblemSection">
+                    <h2><i class="bi bi-file-earmark-code"></i> 刷个题</h2>
+                    <div class="form-group">
+                        <label for="problemIds">题目ID（多个用英文逗号分隔）</label>
+                        <div class="input-group">
+                            <textarea id="problemIds" placeholder="例如: P1001,I1145"></textarea>
+                            <button class="button" onclick="clearInput('problemIds')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="problemNotes">额外提示（可选）</label>
+                        <div class="input-group">
+                            <textarea id="problemNotes" placeholder="给AI的额外提示信息..."></textarea>
+                            <button class="button" onclick="clearInput('problemNotes')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="button success" onclick="startProblemSolver()">
+                            <i class="bi bi-play-fill"></i> 开始刷题
+                        </button>
+                    </div>
+                </div>
+
+                <div class="solve-section" id="trainingSection">
+                    <h2><i class="bi bi-collection"></i> 刷训练题</h2>
+                    <div class="form-group">
+                        <label for="trainingIds">训练集ID（多个用英文逗号分隔）</label>
+                        <div class="input-group">
+                            <textarea id="trainingIds" placeholder="例如: 1,2,3"></textarea>
+                            <button class="button" onclick="clearInput('trainingIds')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="trainingNotes">额外提示（可选）</label>
+                        <div class="input-group">
+                            <textarea id="trainingNotes" placeholder="给AI的额外提示信息..."></textarea>
+                            <button class="button" onclick="clearInput('trainingNotes')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="button success" onclick="startTrainingSolver()">
+                            <i class="bi bi-play-fill"></i> 开始刷题
+                        </button>
+                    </div>
+                </div>
+
+                <div class="solve-section" id="allProblemSection">
+                    <h2><i class="bi bi-stack"></i> 刷全部题</h2>
+                    <div class="description">
+                        <p>将自动刷取当前OJ平台上所有可用的题目。</p>
+                        <div class="warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>请确保有充足的时间，该操作可能需要较长时间完成，甚至几天几夜……</span>
+                        </div>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="button success" onclick="startAllSolver()">
+                            <i class="bi bi-play-fill"></i> 开始刷题
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 运行状态和日志 -->
+            <div id="statusSection" class="status-section">
+                <h2><i class="bi bi-info-circle"></i> 运行状态</h2>
+                <div class="status-info">
+                    <div class="status-item">
+                        <span class="status-label">运行状态：</span>
+                        <span id="runningStatus" class="status-value">未开始</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">AI登录：</span>
+                        <span id="aiLoginStatus" class="status-value">未登录</span>
+                    </div>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div class="log-header">
+                        <span>运行日志</span>
+                        <button class="button" onclick="clearLog()">
+                            <i class="bi bi-trash"></i> 清空日志
+                        </button>
+                    </div>
+                    <div class="log-content"></div>
+                </div>
+                <div class="control-buttons">
+                    <button class="button danger" onclick="stopSolver()" id="stopButton" disabled>
+                        <i class="bi bi-stop-fill"></i> 停止运行
+                    </button>
+                    <button class="button" onclick="location.href='/'">
+                        <i class="bi bi-house"></i> 返回首页
+                    </button>
+                </div>
+                <div id="loginButtonContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-icon">
+                <i class="bi" id="modalIcon"></i>
+            </div>
+            <div class="modal-content" id="modalContent"></div>
+            <div class="modal-actions">
+                <button class="modal-button primary" onclick="closeModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/auto_solver/index.js"></script>
+</body>
+</html>
