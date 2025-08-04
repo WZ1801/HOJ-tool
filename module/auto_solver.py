@@ -489,7 +489,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
 def all_code(is_web_call=False) -> None:
     global driver, user_data, submit_T, log_mode
     if submit_T is None:
-        submit_T = Thread(target=submit_code_thread)
+        submit_T = Thread(target=submit_code_thread, daemon=True)
         submit_T.start()
     
     driver = get_driver()
@@ -542,7 +542,7 @@ def all_code(is_web_call=False) -> None:
 def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False, is_web_call=False, web_call_mode=1) -> None:
     global user_data, submit_T, log_mode
     if submit_T is None: 
-        submit_T = Thread(target=submit_code_thread)
+        submit_T = Thread(target=submit_code_thread, daemon=True)
         submit_T.start()
         
     if not is_call:
@@ -601,7 +601,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
     # 提交代码线程
     global submit_T
     if submit_T is None: 
-        submit_T = Thread(target=submit_code_thread)
+        submit_T = Thread(target=submit_code_thread, daemon=True)
         submit_T.start()
     
     global user_data, submit_list
@@ -682,7 +682,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
 
 def main() -> None:
     global submit_T
-    submit_T = Thread(target=submit_code_thread)
+    submit_T = Thread(target=submit_code_thread, daemon=True)
     submit_T.start()
     mode = None
     while mode != '4':
