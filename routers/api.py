@@ -2,8 +2,8 @@
 API路由模块
 """
 
-from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi import APIRouter
 from fastapi import Request
 from os import path as pt
 from json import load
@@ -226,16 +226,16 @@ async def ban_account_(request: Request) -> JSONResponse:
 from collections import deque
 import asyncio
 
-# 限制日志数量，使用线程安全的双端队列
-logs = deque(maxlen=10000)  # 最多保存1000条日志
-logs_lock = asyncio.Lock()
+# 限制日志
+logs1 = deque(maxlen=10000)
+logs_lock1 = asyncio.Lock()
 
 @router.post("/ban_account/log", summary="记录日志")
 async def log1(request: Request) -> JSONResponse:
     try:
         resjson = await request.json()
-        async with logs_lock:
-            logs.append(resjson)
+        async with logs_lock1:
+            logs1.append(resjson)
         import json
         return JSONResponse(
             status_code=200,
@@ -251,10 +251,49 @@ async def log1(request: Request) -> JSONResponse:
 async def get_log1() -> JSONResponse:
     try:
         import json
-        async with logs_lock:
-            logs_copy = list(logs)
+        async with logs_lock1:
+            logs_copy = list(logs1)
         return_log = json.dumps(logs_copy, ensure_ascii=False) if logs_copy else ""
-        logs.clear()
+        logs1.clear()
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "log": return_log}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"获取日志失败: {str(e)}"}
+        )
+
+# 限制日志
+logs2 = deque(maxlen=10000)
+logs_lock2 = asyncio.Lock()
+
+@router.post("/auto_solver/log", summary="记录日志")
+async def log2(request: Request) -> JSONResponse:
+    try:
+        resjson = await request.json()
+        async with logs_lock2:
+            logs2.append(resjson)
+        import json
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "loglong": len(json.dumps(resjson))}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"记录日志失败: {str(e)}"}
+        )
+    
+@router.get("/auto_solver/get_logs", summary="读取日志")
+async def get_log1() -> JSONResponse:
+    try:
+        import json
+        async with logs_lock2:
+            logs_copy = list(logs2)
+        return_log = json.dumps(logs_copy, ensure_ascii=False) if logs_copy else ""
+        logs2.clear()
         return JSONResponse(
             status_code=200,
             content={"status": "success", "log": return_log}
