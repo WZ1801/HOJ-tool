@@ -26,6 +26,64 @@ ban_account_status = {
 async def amns():
     return {"status": "success"}
 
+
+@router.get("/config_ok", summary="检查用户配置是否合法")
+async def config_ok():
+    """检查用户配置文件是否存在且合法"""
+    try:
+        with open(user_data_path, 'r', encoding='utf-8') as file:
+            user_data = load(file)
+        
+        # 检查必要字段是否存在
+        required_fields = ['OJ', 'AI_URL', 'Browser']
+        for field in required_fields:
+            if field not in user_data:
+                return JSONResponse(
+                    status_code=400,
+                    content={"status": "error", "msg": f"配置文件缺少必要字段: {field}"}
+                )
+        
+        # 检查OJ配置的必要字段
+        required_oj_fields = ['URL', 'APIURL', 'username', 'password']
+        for field in required_oj_fields:
+            if field not in user_data['OJ']:
+                return JSONResponse(
+                    status_code=400,
+                    content={"status": "error", "msg": f"OJ配置缺少必要字段: {field}"}
+                )
+        
+        # 检查Browser配置的必要字段
+        required_browser_fields = ['Type', 'Driver_path']
+        for field in required_browser_fields:
+            if field not in user_data['Browser']:
+                return JSONResponse(
+                    status_code=400,
+                    content={"status": "error", "msg": f"Browser配置缺少必要字段: {field}"}
+                )
+        
+        # 检查爬虫程序是否存在
+        driver_path = user_data['Browser']['Driver_path']
+        if not pt.exists(driver_path):
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "msg": f"浏览器驱动文件不存在: {driver_path}"}
+            )
+        
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "msg": "配置文件合法"}
+        )
+    except FileNotFoundError:
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "msg": "配置文件不存在"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"检查配置文件时发生错误：{e}"}
+        )
+
 @router.get("/config/get", summary="获取用户配置")
 async def get_config():
     """获取用户配置信息"""
