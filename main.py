@@ -85,39 +85,35 @@ def get_user_data() -> None:
 def main():
     init(autoreset=True)
     system('cls')
-    system('title HOJtool v3.2')
-    try:
-        print(Fore.BLUE + '欢迎使用HOJtool v3.2\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n按任意键进入webGUI模式，按Ctrl+C进入Console模式' + Style.RESET_ALL)
-        system('pause >nul')
-    except KeyboardInterrupt:
-        try:
-            mode = None
-            while mode != '4':
-                system('cls')
-                print(Fore.BLUE + '欢迎使用HOJtool v3.2 Console Mode！\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
-                mode = input('请输入序号:')
-                system('cls')
-                if mode == '1':
-                    get_user_data()
-                    print(f'{Fore.GREEN}配置成功{Style.RESET_ALL}')
-                    system('pause')
-                elif mode == '2':
-                    try:
-                        module.auto_solver.main()
-                    except Exception as e:
-                        print(Fore.RED + f'啊？这都报错:{e}' + Style.RESET_ALL)
-                elif mode == '3':
-                    module.ban_account.main()
-            return
-        except:
-            return
-    system('cls')
-    import server
-    import webbrowser
-    webbrowser.open('http://127.0.0.1:1146')
-    print(f"{Fore.RED}正在开启服务器，此页面仅供开发者参考，请勿关闭本窗口！\n{Style.RESET_ALL}{Fore.GREEN}访问 http://127.0.0.1:1146 或 http://localhost:1146 即可访问HOJtool网页控制台。{Style.RESET_ALL}")
-    server.start_server()
-    return
-            
+    system('title HOJtool v4.0')
+    print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式，输入Console进入Console模式(已不更新)\n' + Style.RESET_ALL)
+    if input() == 'Console':
+        mode = None
+        while mode != '4':
+            system('cls')
+            print(Fore.BLUE + '欢迎使用HOJtool v4.0 Console Mode！\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
+            mode = input('请输入序号:')
+            system('cls')
+            if mode == '1':
+                get_user_data()
+                print(f'{Fore.GREEN}配置成功{Style.RESET_ALL}')
+                system('pause')
+            elif mode == '2':
+                try:
+                    module.auto_solver.main()
+                except Exception as e:
+                    print(Fore.RED + f'啊？这都报错:{e}' + Style.RESET_ALL)
+            elif mode == '3':
+                module.ban_account.main()
+        return
+    else:
+        system('cls')
+        import server
+        import webbrowser
+        webbrowser.open('http://127.0.0.1:1146')
+        print(f"{Fore.RED}正在开启服务器，此页面仅供开发者参考，请勿关闭本窗口！\n{Style.RESET_ALL}{Fore.GREEN}访问 http://127.0.0.1:1146 或 http://localhost:1146 即可访问HOJtool网页控制台。{Style.RESET_ALL}")
+        server.start_server()
+        return
+
 if __name__ == '__main__':
     main()
