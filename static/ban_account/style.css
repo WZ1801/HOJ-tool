@@ -98,11 +98,12 @@
     background: #2c3e50;
     border-radius: 5px;
     padding: 15px;
-    font-family: 'Courier New', monospace;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
     font-size: 14px;
 }
 
 .log-entry {
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
     color: #ecf0f1;
     margin-bottom: 5px;
     word-break: break-all;

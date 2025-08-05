@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     statusDisplay.style.cssText = 'display: inline-block; margin-left: 10px; padding: 5px 10px; border-radius: 4px; font-weight: bold;';
     startBanButton.parentNode.appendChild(statusDisplay);
 
+    // 检查配置文件
+    checkConfig();
+
     // 切换封禁类型
     banTypeAssign.addEventListener('change', function() {
         if (this.checked) {
@@ -38,6 +41,112 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 停止封禁按钮事件
     stopBanButton.addEventListener('click', stopBan);
+
+    // 检查配置文件
+    async function checkConfig() {
+        try {
+            const response = await fetch('/api/config_ok');
+            const result = await response.json();
+            
+            if (result.status !== 'success') {
+                // 显示错误信息并添加确认按钮
+                showConfigErrorModal('配置文件错误: ' + result.msg);
+            }
+        } catch (error) {
+            console.error('检查配置文件时发生错误:', error);
+            showConfigErrorModal('检查配置文件时发生错误: ' + error.message);
+        }
+    }
+
+    // 显示配置错误模态框
+    function showConfigErrorModal(message) {
+        // 创建模态框元素
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay show';
+        modalOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal error show';
+        modal.style.cssText = `
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            min-width: 300px;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            transform: scale(1);
+            opacity: 1;
+            transition: all 0.3s ease;
+        `;
+
+        const modalIcon = document.createElement('div');
+        modalIcon.className = 'modal-icon';
+        modalIcon.innerHTML = `<i class="bi bi-x-circle" style="font-size: 48px; color: #dc3545;"></i>`;
+        modalIcon.style.cssText = 'margin-bottom: 16px;';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.textContent = message;
+        modalContent.style.cssText = 'margin-bottom: 20px;';
+
+        const modalActions = document.createElement('div');
+        modalActions.className = 'modal-actions';
+
+        const confirmButton = document.createElement('button');
+        confirmButton.className = 'modal-button primary';
+        confirmButton.textContent = '确认';
+        confirmButton.style.cssText = `
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        confirmButton.onclick = function() {
+            window.location.href = 'http://127.0.0.1:1146';
+        };
+
+        modalActions.appendChild(confirmButton);
+        modal.appendChild(modalIcon);
+        modal.appendChild(modalContent);
+        modal.appendChild(modalActions);
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+
+        // 添加点击遮罩层关闭
+        modalOverlay.onclick = (e) => {
+            if (e.target === modalOverlay) {
+                document.body.removeChild(modalOverlay);
+                window.location.href = 'http://127.0.0.1:1146';
+            }
+        };
+
+        // 添加ESC键关闭
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                if (document.body.contains(modalOverlay)) {
+                    document.body.removeChild(modalOverlay);
+                }
+                window.location.href = 'http://127.0.0.1:1146';
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
 
     // 开始封禁功能
     function startBan() {
