@@ -49,6 +49,79 @@ function closeModal() {
     }, 300);
 }
 
+// 检查配置文件
+async function checkConfig() {
+    try {
+        const response = await fetch('/api/config_ok');
+        const result = await response.json();
+        
+        if (result.status !== 'success') {
+            // 显示错误信息并添加确认按钮
+            showConfigErrorModal('配置文件错误: ' + result.msg);
+        }
+    } catch (error) {
+        console.error('检查配置文件时发生错误:', error);
+        showConfigErrorModal('检查配置文件时发生错误: ' + error.message);
+    }
+}
+
+// 显示配置错误模态框
+function showConfigErrorModal(message) {
+    const modal = document.getElementById('modal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalContent = document.getElementById('modalContent');
+    const modalIcon = document.getElementById('modalIcon');
+    
+    // 清空现有内容
+    const modalActions = document.querySelector('.modal-actions');
+    if (modalActions) {
+        modalActions.remove();
+    }
+    
+    // 创建新的操作按钮容器
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'modal-actions';
+    
+    const confirmButton = document.createElement('button');
+    confirmButton.className = 'modal-button primary';
+    confirmButton.textContent = '确认';
+    confirmButton.onclick = function() {
+        window.location.href = 'http://127.0.0.1:1146';
+    };
+    
+    actionsDiv.appendChild(confirmButton);
+    
+    modalContent.textContent = message;
+    modal.className = 'modal error';
+    modalIcon.className = 'bi bi-x-circle';
+    
+    // 添加按钮到模态框
+    modal.appendChild(actionsDiv);
+    
+    modalOverlay.classList.add('show');
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+    
+    // 添加点击遮罩层关闭
+    modalOverlay.onclick = (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+            window.location.href = 'http://127.0.0.1:1146';
+        }
+    };
+    
+    // 添加ESC键关闭
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            window.location.href = 'http://127.0.0.1:1146';
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
 // 更新状态显示
 function updateStatus() {
     const runningStatus = document.getElementById('runningStatus');
@@ -306,6 +379,7 @@ async function confirmAiLogin() {
 }
 
 // 页面加载时初始化
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
+    checkConfig();
     startStatusUpdate();
 });
