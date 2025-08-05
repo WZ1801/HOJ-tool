@@ -124,6 +124,9 @@ def ban_account(mode: str, arg=None) -> None:
             return
         
         for i in json_data['data']['records']: 
+            if log_mode == 2 and requests.get("http://127.0.0.1:1146/api/ban_account/status").json()['stop_flag'] == True:
+                requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                break
             if i['username'] in white_list:
                 continue
             ban(i['username'], log_mode)
@@ -139,7 +142,12 @@ def ban_account(mode: str, arg=None) -> None:
         send_log('info', f"开始封禁指定用户：{', '.join(username)}", log_mode)
         
         for i in username:
+            if log_mode == 2 and requests.get("http://127.0.0.1:1146/api/ban_account/status").json()['stop_flag'] == True:
+                requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                break
             ban(i, log_mode)
+    if log_mode == 2:
+        requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
 
 def main() -> None:
     if is_user_data_read:
