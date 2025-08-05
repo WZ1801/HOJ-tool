@@ -14,9 +14,8 @@ body {
 
 /* 顶部导航栏样式 */
 .top-nav {
-    background: linear-gradient(135deg, #2c3e50, #1a2530);
+    background: linear-gradient(135deg, #5197dd, #6d9dcd);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 12px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -33,7 +32,7 @@ body {
 .top-nav a {
     color: #ecf0f1;
     text-decoration: none;
-    padding: 12px 20px;
+    padding: 8px 20px;
     border-radius: 8px;
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     display: flex;
@@ -81,7 +80,7 @@ body {
 
 /* 标题样式 */
 .header {
-    background-color: #2c3e50;
+    background-color: #4c8bc9;
     color: white;
     padding: 20px 0;
     text-align: center;
@@ -157,7 +156,7 @@ body {
 .footer {
     text-align: center;
     padding: 20px;
-    background-color: #2c3e50;
+    background-color: #add6ff;
     color: white;
     margin-top: 40px;
 }
