@@ -5,44 +5,44 @@ from json import load
 import requests
 import sys
 
-def send_log(type: str = 'info', message: str = '', mode: int = 1) -> None:
+def send_log(type: str = 'info', message: str = '') -> None:
     try:
+        global log_mode  # 使用全局log_mode变量
+        
         match type:
             case 'info':
-                match mode:
-                    case 1:
-                        print(message)
-                    case 2:
-                        requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'info', 'message': message})
+                if log_mode == 1:
+                    print(message)
+                elif log_mode == 2:
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'info', 'message': message})
             case 'success':
-                match mode:
-                    case 1:
-                        print(Fore.GREEN + message + Style.RESET_ALL)
-                    case 2:
-                        requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'success', 'message': message})
+                if log_mode == 1:
+                    print(Fore.GREEN + message + Style.RESET_ALL)
+                elif log_mode == 2:
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'success', 'message': message})
             case 'warning':
-                match mode:
-                    case 1:
-                        print(Fore.YELLOW + message + Style.RESET_ALL)
-                    case 2:
-                        requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'warning', 'message': message})
+                if log_mode == 1:
+                    print(Fore.YELLOW + message + Style.RESET_ALL)
+                elif log_mode == 2:
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'warning', 'message': message})
             case 'error':
-                match mode:
-                    case 1:
-                        print(Fore.RED + message + Style.RESET_ALL)
-                    case 2:
-                        requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'error', 'message': message})
+                if log_mode == 1:
+                    print(Fore.RED + message + Style.RESET_ALL)
+                elif log_mode == 2:
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'error', 'message': message})
             case 'debug':
-                match mode:
-                    case 1:
-                        print(Fore.BLUE + message + Style.RESET_ALL)
-                    case 2:
-                        requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'debug', 'message': message})
+                if log_mode == 1:
+                    print(Fore.BLUE + message + Style.RESET_ALL)
+                elif log_mode == 2:
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'debug', 'message': message})
     except: 
         return
 
 # 初始化颜色
 init(autoreset=True)
+
+# 定义日志模式 (1 控制台, 2 Web API)
+log_mode = 1
 
 # 导入配置
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
@@ -62,12 +62,12 @@ except Exception as e:
     send_log('error', f'读取用户数据时发生错误：{e}')
 
 # 封号函数
-def ban(username, log_mode=1) -> None:
+def ban(username) -> None:
     for i in range(25):
         if login(username, 'esnb') == '对不起！登录失败次数过多！您的账号有风险，半个小时内暂时无法登录！':
-            send_log('success', f"{username}封禁成功！", log_mode)
+            send_log('success', f"{username}封禁成功！")
             return
-    send_log('warning', f"{username}可能是空号号不存在或平台禁用封禁。", log_mode)
+    send_log('warning', f"{username}可能是空号号不存在或平台禁用封禁。")
 
 def login(username, password):
     headers = {
@@ -104,23 +104,23 @@ def ban_account(mode: str, arg=None) -> None:
         try:
             response = requests.get(f'{url}/api/get-rank-list?currentPage=1&limit=114514&type=1', headers=headers)
         except requests.RequestException as e:
-            send_log('error', f"获取排行榜请求失败: {e}", log_mode)
+            send_log('error', f"获取排行榜请求失败: {e}")
             return
         
         # 检查响应状态码 
         if response.status_code != 200:
-            send_log('error', f"获取排行榜请求失败，状态码：{response.status_code}", log_mode)
+            send_log('error', f"获取排行榜请求失败，状态码：{response.status_code}")
             return
         
         try:
             json_data = response.json() 
         except requests.exceptions.JSONDecodeError:
-            send_log('error', f"排行榜请求JSON解析失败。原始响应：{response.text}", log_mode)
+            send_log('error', f"排行榜请求JSON解析失败。原始响应：{response.text}")
             return
         
         # 检查JSON结构 
         if 'data' not in json_data or 'records' not in json_data['data']:
-            send_log('error', f"获取排行榜响应JSON结构不符合预期：{json_data}", log_mode)
+            send_log('error', f"获取排行榜响应JSON结构不符合预期：{json_data}")
             return
         
         for i in json_data['data']['records']: 
@@ -129,7 +129,7 @@ def ban_account(mode: str, arg=None) -> None:
                 break
             if i['username'] in white_list:
                 continue
-            ban(i['username'], log_mode)
+            ban(i['username'])
             
     elif mode == 'assign':
         if arg is None:
@@ -139,13 +139,13 @@ def ban_account(mode: str, arg=None) -> None:
             username = arg.split(',')
             log_mode = 2
             
-        send_log('info', f"开始封禁指定用户：{', '.join(username)}", log_mode)
+        send_log('info', f"开始封禁指定用户：{', '.join(username)}")
         
         for i in username:
             if log_mode == 2 and requests.get("http://127.0.0.1:1146/api/ban_account/status").json()['stop_flag'] == True:
                 requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
                 break
-            ban(i, log_mode)
+            ban(i)
     if log_mode == 2:
         requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
 
@@ -160,15 +160,20 @@ def main() -> None:
             if is_user_data_read:
                 if mode == '1':
                     ban_account(mode='all')
-                    print(Fore.GREEN + '已退出' + Style.RESET_ALL)
+                    send_log('success', '已退出')
                     system('pause')
                 elif mode == '2':
                     ban_account(mode='assign')
-                    print(Fore.GREEN + '已退出' + Style.RESET_ALL)
+                    send_log('success', '已退出')
                     system('pause')
             else:
-                print(Fore.RED + '请先配置用户数据。' + Style.RESET_ALL)
+                send_log('error', '请先配置用户数据。')
+                system('pause')
             if mode == '3':
                 return
+    else:
+        send_log('error', '请先配置用户数据。')
+        system('pause')
+
 if __name__ == '__main__':
     main()
