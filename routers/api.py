@@ -17,6 +17,11 @@ auto_solver_status = {
     'is_login_360ai': False
 }
 
+ban_account_status = {
+    'is_banning': False,
+    'stop_flag': False
+}
+
 @router.get("/amns", summary="啊米诺斯！")
 async def amns():
     return {"status": "success"}
@@ -134,7 +139,7 @@ async def problem_code_(request: Request) -> JSONResponse:
     )
 
 @router.get("/auto_solver/status", summary="刷题状态")
-async def check_login_360ai() -> JSONResponse:
+async def get_auto_solver_status() -> JSONResponse:
     """获取刷题状态"""
     try:
         return JSONResponse(
@@ -176,7 +181,7 @@ async def stop_auto_solver() -> JSONResponse:
     )
 
 @router.get("/auto_solver/stopp", summary="is_running倒")
-async def stopp() -> JSONResponse:
+async def auto_solver_stopp() -> JSONResponse:
     try:
         auto_solver_status["is_running"] = False
     except Exception as e:
@@ -192,6 +197,8 @@ async def stopp() -> JSONResponse:
 @router.post("/ban_account/ban_account", summary="封禁账号")
 async def ban_account_(request: Request) -> JSONResponse:
     try:
+        global ban_account_status
+        ban_account_status["is_banning"] = True
         resjson = await request.json()
         if 'mode' not in resjson:
             return JSONResponse(
@@ -226,6 +233,51 @@ async def ban_account_(request: Request) -> JSONResponse:
             status_code=500,
             content={"status": "error", "msg": f"封禁账号失败: {str(e)}"}
         )
+
+@router.get("/ban_account/status", summary="封禁账号状态")
+async def get_ban_account_status() -> JSONResponse:
+    try:
+        global ban_account_status
+        return JSONResponse(
+            status_code=200,
+            content=ban_account_status
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"更新封禁账号状态失败: {str(e)}"}
+        )
+
+@router.get("/ban_account/stop", summary="停止封禁账号")
+async def stop_ban_account() -> JSONResponse:
+    try:
+        global auto_solver_status
+        auto_solver_status['stop_flag'] = True
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "msg": "已发送停止封禁账号操作信号"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"停止封禁账号失败: {str(e)}"}
+        )
+
+@router.get("/ban_account/stopp", summary="已停止封禁账号")
+async def stopp_ban_account() -> JSONResponse:
+    try:
+        global ban_account_status
+        ban_account_status["is_banning"] = False
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "msg": "已发送封禁账号操作已停止信号"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"已停止封禁账号失败: {str(e)}"}
+        )
+
 
 from collections import deque
 import asyncio
