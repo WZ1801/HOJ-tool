@@ -33,52 +33,25 @@ last_submit_time = time()
 submit_T = None
 submit_list = []
 
+is_init = False
+
 # 导入配置
 is_user_data_read = True
 user_data = None
-try:
-    with open(user_data_path, 'r', encoding='utf-8') as file:
-        user_data = json.load(file)
-except FileNotFoundError:
-    print(f'{Fore.RED}未找到配置文件 {user_data_path}{Style.RESET_ALL}')
-    system('pause')
-    exit()
-except Exception as e:
-    print(f'{Fore.RED}读取用户数据时发生错误：{e}{Style.RESET_ALL}')
-    system('pause')
-    exit()
 
-# 爬虫驱动初始化
-options = None
-try:
-    driver_path = user_data['Browser']['Driver_path']
-    if not pt.exists(driver_path):
-        print(f"{Fore.RED}驱动路径不存在，请检查配置文件{Style.RESET_ALL}")
-        
-    if user_data['Browser']['Type'] == 'chrome':
-        from selenium.webdriver.chrome.service import Service
-        from selenium.webdriver.chrome.options import Options
-    elif user_data['Browser']['Type'] == 'edge':
-        from selenium.webdriver.edge.service import Service
-        from selenium.webdriver.edge.options import Options
-    elif user_data['Browser']['Type'] == 'Firefox':
-        from selenium.webdriver.firefox.service import Service
-        from selenium.webdriver.firefox.options import Options
-    else:
-        print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
+def initt():
+    global is_user_data_read, user_data
+    try:
+        with open(user_data_path, 'r', encoding='utf-8') as file:
+            user_data = json.load(file)
+    except FileNotFoundError:
+        print(f'{Fore.RED}未找到配置文件 {user_data_path}{Style.RESET_ALL}')
         system('pause')
         exit()
-        
-    options = Options()
-    options.add_argument("--log-level=3")
-    options.add_argument("--disable-infobars")
-    options.add_argument("excludeswitches")
-    options.add_argument("--enable-automation")
-    
-except Exception as e:
-    print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
-    system('pause')
-    exit()
+    except Exception as e:
+        print(f'{Fore.RED}读取用户数据时发生错误：{e}{Style.RESET_ALL}')
+        system('pause')
+        exit()
 
 def send_log(type: str = 'info', message: str = '') -> None:
     try:
@@ -118,7 +91,38 @@ def send_log(type: str = 'info', message: str = '') -> None:
 
 # 获取driver
 def get_driver():
-    global user_data, options, log_mode
+    global user_data
+    # 爬虫驱动初始化
+    options = None
+    try:
+        driver_path = user_data['Browser']['Driver_path']
+        if not pt.exists(driver_path):
+            print(f"{Fore.RED}驱动路径不存在，请检查配置文件{Style.RESET_ALL}")
+            
+        if user_data['Browser']['Type'] == 'chrome':
+            from selenium.webdriver.chrome.service import Service
+            from selenium.webdriver.chrome.options import Options
+        elif user_data['Browser']['Type'] == 'edge':
+            from selenium.webdriver.edge.service import Service
+            from selenium.webdriver.edge.options import Options
+        elif user_data['Browser']['Type'] == 'Firefox':
+            from selenium.webdriver.firefox.service import Service
+            from selenium.webdriver.firefox.options import Options
+        else:
+            print(f"{Fore.RED}浏览器类型错误，请重新配置并检查配置文件{Style.RESET_ALL}")
+            system('pause')
+            exit()
+            
+        options = Options()
+        options.add_argument("--log-level=3")
+        options.add_argument("--disable-infobars")
+        options.add_argument("excludeswitches")
+        options.add_argument("--enable-automation")
+        
+    except Exception as e:
+        print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
+        system('pause')
+        exit()
     if user_data['Browser']['Type'] == 'chrome':
         service = Service(user_data['Browser']['Driver_path'])
         return webdriver.Chrome(service=service, options=options)
@@ -129,7 +133,7 @@ def get_driver():
         service = Service(user_data['Browser']['Driver_path'])
         return webdriver.Firefox(service=service, options=options)
     else:
-        send_log('error', '浏览器类型错误，请重新配置并检查配置文件', log_mode)
+        send_log('error', '浏览器类型错误，请重新配置并检查配置文件')
 
 # 示例转换格式
 def example_conversion_format(examples: str) -> str:
@@ -200,7 +204,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
     :param notes: 额外提示
     :return: AI话术
     '''
-    global user_data, log_mode
+    global user_data
     problem_url = f"{user_data['OJ']['APIURL']}/api/get-problem-detail?problemId={quote(pid)}"
     try:
         response = requests.get(problem_url, headers={'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'})
@@ -385,7 +389,7 @@ def submit_code_thread() -> None:
 
 def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
     try:
-        global user_data, log_mode
+        global user_data
         headers = {
             'Content-Type': 'application/json',
             'Cookie': f'JSESSIONID={JESSIONID}',
@@ -412,7 +416,7 @@ def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
 def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int = 30, interval: float = 1): 
     '''回调提交'''
     
-    global user_data, log_mode
+    global user_data
     cookies = {
         'JSESSIONID': f'{JSESSIONID}',
     }
@@ -452,7 +456,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     )
     try:
         if str(response.json()['data']['submission']['status']) != '0':
-            send_log('warning', f'{pid}:AI Wrong Answer!', log_mode)
+            send_log('warning', f'{pid}:AI Wrong Answer!')
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
                 params=params,
@@ -487,7 +491,11 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
         send_log('warning', f'回调提交失败: {e}')
 
 def all_code(is_web_call=False) -> None:
-    global driver, user_data, submit_T, log_mode
+    global is_init
+    if not is_init:
+        initt()
+        is_init = True
+    global driver, user_data, submit_T
     if submit_T is None:
         submit_T = Thread(target=submit_code_thread, daemon=True)
         submit_T.start()
@@ -517,18 +525,22 @@ def all_code(is_web_call=False) -> None:
                 
     headers = {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00'
+        'User-Agent': 'Mozilla/6.0 (Windows NT 12.0; Win128; x128) AppleWebKit/600.00 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/600.00',
+        'Cookie': f'JSESSIONID={jsessionid_cookie}'
     }
     i = 1
     while True:
-        tids = []
-        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-training-list?currentPage={i}", headers=headers).json()
+        pids = []
+        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-problem-list?oj=Mine&currentPage={i}&limit=999", headers=headers).json()
+        res2 = requests.post(url=f"{user_data['OJ']['APIURL']}/api/get-user-problem-status", json={"pidList": [record["pid"] for record in response["data"]["records"]],"isContestProblemList": False,"containsEnd": False}, headers=headers).json()
+
         for j in response['data']['records']:
-            tids.append(j['id'])
-        if len(tids) == 0:
+            if str(res2['data'][str(j['pid'])]['status']) != '0':
+                pids.append(j['problemId'])
+        if len(pids) == 0:
             break
-        tids_str = ','.join(map(str, tids))
-        training_code(driver=driver, tids=tids_str, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
+        pids_str = ','.join(map(str, pids))
+        problem_code(driver=driver, pids=pids_str, notes='', jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call, web_call_mode=(2 if is_web_call else 1))
         i += 1
         
     if is_web_call:
@@ -540,7 +552,11 @@ def all_code(is_web_call=False) -> None:
         exit()
 
 def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False, is_web_call=False, web_call_mode=1) -> None:
-    global user_data, submit_T, log_mode
+    global is_init
+    if not is_init:
+        initt()
+        is_init = True
+    global user_data, submit_T
     if submit_T is None: 
         submit_T = Thread(target=submit_code_thread, daemon=True)
         submit_T.start()
@@ -597,6 +613,10 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
             pass
 
 def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False, is_web_call=False, web_call_mode=1) -> None:
+    global is_init
+    if not is_init:
+        initt()
+        is_init = True
     global log_mode
     # 提交代码线程
     global submit_T
@@ -671,7 +691,11 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
         requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
 
 def main() -> None:
-    global submit_T, log_mode
+    global is_init
+    if not is_init:
+        initt()
+        is_init = True
+    global submit_T
     submit_T = Thread(target=submit_code_thread, daemon=True)
     submit_T.start()
     mode = None
