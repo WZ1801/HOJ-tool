@@ -171,10 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
             requestData.username = username;
         } else if (banType === 'all') {
             const whiteList = document.getElementById('white_list').value.trim();
-            if (!whiteList) {
-                addLog('请输入白名单账号，避免误封重要账号', 'error');
-                return;
-            }
             requestData.white_list = whiteList;
         }
 
