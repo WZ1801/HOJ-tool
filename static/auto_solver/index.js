@@ -223,7 +223,7 @@ function createLoginButton() {
         button.id = 'loginButton';
         button.className = 'button success';
         button.onclick = confirmAiLogin;
-        button.innerHTML = '<i class="bi bi-check-circle"></i> 已完成AI登陆';
+        button.innerHTML = '<i class="bi bi-check-circle"></i> 已完成AI登录';
         container.appendChild(button);
     }
 }
