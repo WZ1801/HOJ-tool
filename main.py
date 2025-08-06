@@ -86,8 +86,8 @@ def main():
     init(autoreset=True)
     system('cls')
     system('title HOJtool v4.0')
-    print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式，输入Console进入Console模式(已不更新)\n' + Style.RESET_ALL)
-    if input() == 'Console':
+    print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
+    if input() == 'console':
         mode = None
         while mode != '4':
             system('cls')
