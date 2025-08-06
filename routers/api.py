@@ -22,11 +22,6 @@ ban_account_status = {
     'stop_flag': False
 }
 
-@router.get("/amns", summary="啊米诺斯！")
-async def amns():
-    return {"status": "success"}
-
-
 @router.get("/config_ok", summary="检查用户配置是否合法")
 async def config_ok():
     """检查用户配置文件是否存在且合法"""
@@ -309,8 +304,8 @@ async def get_ban_account_status() -> JSONResponse:
 @router.get("/ban_account/stop", summary="停止封禁账号")
 async def stop_ban_account() -> JSONResponse:
     try:
-        global auto_solver_status
-        auto_solver_status['stop_flag'] = True
+        global ban_account_status
+        ban_account_status['stop_flag'] = True
         return JSONResponse(
             status_code=200,
             content={"status": "success", "msg": "已发送停止封禁账号操作信号"}
