@@ -114,10 +114,9 @@ def get_driver():
             exit()
             
         options = Options()
-        options.add_argument("--log-level=3")
-        options.add_argument("--disable-infobars")
-        options.add_argument("excludeswitches")
-        options.add_argument("--enable-automation")
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_argument('--disable-infobars')
         
     except Exception as e:
         print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
