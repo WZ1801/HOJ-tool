@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HOJ Tool Web Server
 
@@ -42,7 +40,7 @@ app.include_router(pages.router)
 app.include_router(api.router, prefix="/api")
 
 # 挂载根路径静态文件服务，用于加载CSS和JS等文件
-app.mount("/", StaticFiles(directory="static"), name="static")
+app.mount("/", StaticFiles(directory="static", html=True, check_dir=False), name="static")
 
 # 静态文件配置
 static_paths = {
@@ -55,13 +53,19 @@ static_paths = {
 for route_path, dir_name in static_paths.items():
     app.mount(
         route_path,
-        StaticFiles(directory=os.path.join('static', dir_name)),
+        StaticFiles(directory=os.path.join('static', dir_name), check_dir=False),
         name=f"static_{dir_name}"
     )
 
 def start_server() -> None:
     """启动FastAPI服务器"""
-    uvicorn.run(app, host="127.0.0.1", port=1146)
+    uvicorn.run(
+        app, 
+        host="127.0.0.1", 
+        port=1146,
+        log_level="error",
+        access_log=False
+    )
 
 if __name__ == "__main__":
     start_server()

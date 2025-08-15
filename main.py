@@ -107,8 +107,9 @@ def main():
                 module.ban_account.main()
         return
     else:
+        
         system('cls')
-        print(f'{Fore.RED}此为开发者日志页面!{Style.RESET_ALL}')
+        print(f'{Fore.RED}此为开发者日志页面,仅错误显示!{Style.RESET_ALL}')
         import webview
         import server
         from threading import Thread

@@ -3,7 +3,7 @@
 """
 
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 import os
 
 router = APIRouter()
@@ -33,3 +33,12 @@ for route, (folder, file) in PAGES.items():
         """返回页面HTML文件"""
         index_path = os.path.join("static", folder, file)
         return read_html_file(index_path)
+
+@router.get("/favicon.ico")
+async def favicon():
+    """提供favicon.ico文件"""
+    favicon_path = os.path.join("static", "favicon.ico")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path, media_type="image/x-icon")
+    else:
+        return HTMLResponse("<h1>404 Not Found</h1><p>Favicon not found</p>", status_code=404)
