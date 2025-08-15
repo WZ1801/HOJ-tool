@@ -24,6 +24,41 @@ function closeModal() {
     }, 300);
 }
 
+// 去除网址末尾斜杠的函数
+function removeTrailingSlash(url) {
+    if (url && url.endsWith('/')) {
+        return url.slice(0, -1);
+    }
+    return url;
+}
+
+// 检测网址是否有效
+function isValidUrl(string) {
+    try {
+        if (!string) return false;
+        
+        if (!/^https?:\/\//.test(string)) {
+            return false;
+        }
+        
+        const url = new URL(string);
+        
+        const hostname = url.hostname;
+        if (!hostname) {
+            return false;
+        }
+        
+        const port = url.port;
+        if (port && (isNaN(port) || port < 1 || port > 65535)) {
+            return false;
+        }
+        
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // 加载现有配置
     const config = await loadConfig();
@@ -37,26 +72,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('driverPath').value = config.Browser.Driver_path;
     }
 
-    // 处理驱动文件选择
-    document.getElementById('driverFile').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            document.getElementById('driverPath').value = file.path;
+    // 失焦
+    document.getElementById('ojUrl').addEventListener('blur', function() {
+        if (this.value) {
+            // 去除末尾多余的斜杠
+            this.value = removeTrailingSlash(this.value);
+            if (!isValidUrl(this.value)) {
+                showModal('OJ网址格式不正确，请输入有效的URL', 'error');
+                this.focus();
+                return;
+            }
+        }
+    });
+    
+    document.getElementById('ojApiUrl').addEventListener('blur', function() {
+        if (this.value) {
+            // 去除末尾多余的斜杠
+            this.value = removeTrailingSlash(this.value);
+            if (!isValidUrl(this.value)) {
+                showModal('OJ API网址格式不正确，请输入有效的URL', 'error');
+                this.focus();
+                return;
+            }
+        }
+    });
+    
+    document.getElementById('aiUrl').addEventListener('blur', function() {
+        if (this.value) {
+            // 去除末尾多余的斜杠再
+            this.value = removeTrailingSlash(this.value);
+            if (!isValidUrl(this.value)) {
+                showModal('AI对话地址格式不正确，请输入有效的URL', 'error');
+                this.focus();
+                return;
+            }
         }
     });
 
-    // 处理表单提交
     document.getElementById('settingsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // 在提交前再次验证所有网址
+        const ojUrl = document.getElementById('ojUrl').value;
+        const ojApiUrl = document.getElementById('ojApiUrl').value;
+        const aiUrl = document.getElementById('aiUrl').value;
+        
+        if (ojUrl) {
+            const cleanOjUrl = removeTrailingSlash(ojUrl);
+            if (!isValidUrl(cleanOjUrl)) {
+                showModal('OJ网址格式不正确，请输入有效的URL', 'error');
+                return;
+            }
+        }
+        
+        if (ojApiUrl) {
+            const cleanOjApiUrl = removeTrailingSlash(ojApiUrl);
+            if (!isValidUrl(cleanOjApiUrl)) {
+                showModal('OJ API网址格式不正确，请输入有效的URL', 'error');
+                return;
+            }
+        }
+        
+        if (aiUrl) {
+            const cleanAiUrl = removeTrailingSlash(aiUrl);
+            if (!isValidUrl(cleanAiUrl)) {
+                showModal('AI对话地址格式不正确，请输入有效的URL', 'error');
+                return;
+            }
+        }
+        
         const formData = {
             OJ: {
-                URL: document.getElementById('ojUrl').value,
-                APIURL: document.getElementById('ojApiUrl').value,
+                URL: ojUrl ? removeTrailingSlash(ojUrl) : ojUrl,
+                APIURL: ojApiUrl ? removeTrailingSlash(ojApiUrl) : ojApiUrl,
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value
             },
-            AI_URL: document.getElementById('aiUrl').value,
+            AI_URL: aiUrl ? removeTrailingSlash(aiUrl) : aiUrl,
             Browser: {
                 Type: document.getElementById('browserType').value,
                 Driver_path: document.getElementById('driverPath').value

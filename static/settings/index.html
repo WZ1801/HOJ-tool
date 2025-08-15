@@ -25,7 +25,7 @@
     </header>
 
     <main class="container">
-        <form id="settingsForm" class="settings-form">
+        <form id="settingsForm" class="settings-form">、
             <div class="form-section">
                 <h2>OJ平台设置</h2>
                 <div class="form-group">
@@ -67,11 +67,8 @@
                 <div class="form-group">
                     <label for="driverPath">驱动程序路径</label>
                     <div class="file-input-group">
-                        <input type="text" id="driverPath" name="driverPath" readonly required>
+                        <input type="text" id="driverPath" name="driverPath" placeholder="例如：C:\path\to\chromedriver.exe    请使用绝对路径！！！" required>
                         <input type="file" id="driverFile" accept=".exe" style="display: none;">
-                        <button type="button" class="button" onclick="document.getElementById('driverFile').click()">
-                            选择文件
-                        </button>
                     </div>
                 </div>
             </div>

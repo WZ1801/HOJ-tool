@@ -122,6 +122,10 @@
     color: #e74c3c;
 }
 
+.modal.warning .modal-icon {
+    color: #f39c12;
+}
+
 .modal-content {
     text-align: center;
     margin-bottom: 20px;
@@ -265,4 +269,8 @@
 
 .modal.error .modal-button.primary {
     background-color: #e74c3c;
+}
+
+.modal.warning .modal-button.primary {
+    background-color: #f39c12;
 }
