@@ -4,6 +4,7 @@ from colorama import Fore, Back, Style, init
 from os import path as pt
 from os import system
 from json import dump
+from sys import argv
 
 # 配置文件路径
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
@@ -86,8 +87,8 @@ def main():
     init(autoreset=True)
     system('cls')
     system('title HOJtool v4.0')
-    print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
-    if input() == 'console':
+    # print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
+    if '-console' in argv:
         mode = None
         while mode != '4':
             system('cls')
@@ -108,12 +109,30 @@ def main():
         return
     else:
         system('cls')
+        import webview
         import server
-        import webbrowser
-        webbrowser.open('http://127.0.0.1:1146')
-        print(f"{Fore.RED}正在开启服务器，此页面仅供开发者参考，请勿关闭本窗口！\n{Style.RESET_ALL}{Fore.GREEN}访问 http://127.0.0.1:1146 或 http://localhost:1146 即可访问HOJtool网页控制台。{Style.RESET_ALL}")
-        server.start_server()
-        return
+        from threading import Thread
+
+        server_thread = Thread(target=server.start_server)
+        server_thread.daemon = True
+        server_thread.start()
+
+        def on_closing():
+            """关闭窗口退出程序"""
+            import os
+            os._exit(0)
+
+        try:
+            window = webview.create_window('HOJ tool', 'http://127.0.0.1:1146', maximized=True)
+            window.events.closing += on_closing
+            webview.start()
+        except Exception as e:
+            import tkinter
+            import tkinter.messagebox
+            root = tkinter.Tk()
+            root.withdraw()
+            tkinter.messagebox.showerror("HOJ tool Error", f"打开浏览页面发生错误:{e}\n请确认是否安装WebView2或IE COM组件，Win7/8需自行安装组件。如无法解决，请向HOJ tool反馈")
+            root.destroy()
 
 if __name__ == '__main__':
     main()
