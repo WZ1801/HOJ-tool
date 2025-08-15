@@ -1,4 +1,3 @@
-print('加载中，请稍后\\^o^/')
 import module.auto_solver, module.ban_account, sys
 from colorama import Fore, Back, Style, init
 from os import path as pt
@@ -109,6 +108,7 @@ def main():
         return
     else:
         system('cls')
+        print(f'{Fore.RED}此为开发者日志页面!{Style.RESET_ALL}')
         import webview
         import server
         from threading import Thread
