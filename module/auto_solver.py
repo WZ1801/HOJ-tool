@@ -600,7 +600,7 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
                 send_log('error', f'获取训练题目ID时出错:{str(e)}')
                 continue
             # 调用 problem_code 处理每个 pid
-            problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call)
+            problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call, web_call_mode=(2 if is_web_call and web_call_mode == 2 else 1))
             
     if not is_call:
         driver.quit()
@@ -634,7 +634,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
         print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
         system('pause')
-    if web_call_mode == 2 and is_web_call:
+    if web_call_mode == 2 and is_web_call and driver is None:
         driver = get_driver()
         log_mode = 2
 
@@ -650,8 +650,10 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                     break
             except Exception as e:
                 try:
-                    pass # 发送错误包
+                    pass
                 except: exit()
+    if is_web_call and driver is not None:
+        log_mode = 2
     if is_web_call:
         if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
             requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
@@ -686,7 +688,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
 
     if not is_call:
         driver.quit()
-    if is_web_call and web_call_mode == 2:
+    if is_web_call and web_call_mode == 2 and driver is not None:
         requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
 
 def main() -> None:
