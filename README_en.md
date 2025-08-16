@@ -1,136 +1,140 @@
-# HOJ Tool  
+# HOJ Tool
 
-## Project Introduction  
+## Project Introduction
 
-HOJ Tool is an auxiliary tool designed for HOJ-style online judge systems (OJ), providing automated problem-solving and account management features. It supports both command-line and web interface operation modes and is compatible with Windows platforms.  
+HOJ Tool is an auxiliary tool for [HOJ](https://gitee.com/himitzh0730/hoj)-like online judge (OJ) systems, providing automated problem-solving and account management functions. It supports both command-line and web interfaces and is suitable for the Windows platform.
 
-## Key Features  
+## Main Features
 
-1. **Automated Problem-Solving Module**: Uses AI to automatically solve programming problems on OJ platforms.  
-   - Supports three modes: practice problems, specified problems, and all problems.  
-   - Automatically analyzes problem requirements and generates solution code.  
-   - Intelligently submits and verifies results.  
+1. **Automated Problem-Solving Module**: Utilizes AI to assist in automatically solving programming problems on the OJ platform.
+   - Supports three problem-solving modes: training problems, specified problems, and all problems.
+   - Generates solution code using web crawlers.
+   - Ensures foolproof submission through callback mechanisms.
 
-2. **Account Management Module**: Provides account-related management functions.  
-   - Supports banning specified accounts.  
-   - Supports batch banning (with optional whitelist settings).  
+2. **Account Management Module**: Provides account-related management functions
+   - Supports banning specified accounts
+   - Supports batch banning of accounts (with whitelist settings available)
 
-3. **Dual-Mode Interface**:  
-   - Command-line console mode: Lightweight operation.  
-   - Web GUI mode: Modern web interface based on FastAPI.  
+## System Requirements
 
-4. **Configuration Management**: Saves user settings for future use.  
+- Operating System: Windows 10/11
+- Browser: Google Chrome, Microsoft Edge, or Firefox
+- Network Connection: A stable internet connection is required
+- Python Environment: See `pyproject.toml` for details
 
-## System Requirements  
+## Installation Tutorial
 
-- Operating System: Windows 7/8/10/11  
-- Browser: Google Chrome (recommended), Microsoft Edge, or Firefox  
-- Internet Connection: Stable connection required  
+### Method One: Source Code Deployment
 
-## Installation Guide  
+1. Clone the repository to your local machine
 
-### Method 1: Source Code Deployment  
+   ```shell
+   git clone <https://gitee.com/wzokee/hoj-tool.git>
+   ```
 
-1. Clone the repository locally:  
+2. Install a browser
+   - <https://www.google.cn/chrome/>
+   - <https://www.firefox.com/>
+   - <https://www.microsoft.com/edge/download>
 
-   ```shell  
-   git clone https://gitee.com/wzokee/hoj-tool.git  
-   ```  
+3. Install the corresponding crawler driver for your browser (it may not be the latest or most stable, please use your own discretion)
+   - Chrome driver download address: <https://googlechromelabs.github.io/chrome-for-testing/>
+   - Or: <http://chromedriver.storage.googleapis.com/index.html>
 
-2. Install a browser (Google Chrome recommended).  
+- Edge Driver Download Link: <https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/>
+- Firefox Driver Download Link: <https://github.com/mozilla/geckodriver/releases>
 
-3. Install the corresponding web driver for the browser (versions may not be the latest or stable; verify as needed):  
-   - Chrome Driver: <https://googlechromelabs.github.io/chrome-for-testing/>  
-   - Alternative: <http://chromedriver.storage.googleapis.com/index.html>  
-   - Edge Driver: <https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/>  
-   - Firefox Driver: <https://github.com/mozilla/geckodriver/releases>  
+4. Install Python Third-Party Libraries
 
-4. Install Python dependencies:  
-   - Run `tool/install_packages.bat` or manually install the following packages:  
+- Run `tool/install_packages.bat`
 
-     ```packages
-     selenium  
-     requests  
-     pyperclip  
-     colorama  
-     python-dotenv  
-     fastapi  
-     uvicorn  
-     ```  
+### Method Two: Installer Package Installation (Recommended)
 
-### Method 2: Installer Setup (Recommended)  
+1. Download the latest version of the installer package file
+2. Follow the prompts to install
+3. Install the browser, same as above
+4. Install the crawler driver corresponding to the browser, same as above
 
-1. Download the latest EXE file.  
-2. Install a browser (Google Chrome recommended), as above.  
-3. Install the corresponding web driver.  
+## Instructions for Use
 
-## Usage Instructions  
+### 1. Start the Program
 
-### 1. Launch the Program  
+- Source code method: Run `python main.py`
+- Installer method: Double-click `main.exe`
 
-- Source code method: Run `python main.py`.  
-- EXE method: Double-click `main.exe`.  
+After startup, it defaults to Web GUI mode. Alternatively, if deploying from source code, you can add the parameter `python main.py -console` at startup to enter command-line mode (command-line mode is no longer updated).
 
-By default, the program starts in Web GUI mode. You can also enter "console" at launch to use the command-line mode (command-line mode is no longer maintained).  
+### 2. Configuration Information
 
-### 2. Configuration  
+Initial setup is required for first-time use:
 
-First-time setup requires configuration:  
+1. Select "Configuration" from the main menu
+2. Follow the prompts to enter the following:
+   - OJ URL (retain http:// or https://)
 
-1. Select "Configuration" from the main menu.  
-2. Enter the following as prompted:  
-   - OJ URL (include `http://` or `https://`).  
-   - OJ API URL (if unsure, use the same as the OJ URL).  
-   - OJ username and password.  
-   - AI chat URL (register/login at [360bot](https://bot.n.cn/), create a chat page, and copy the URL).  
-   - Browser type (Chrome/Edge/Firefox).  
-   - Browser driver path.  
-3. Log in to 360bot on the pop-up page to obtain cookies. Press Enter after logging in to complete setup.  
+- OJ API URL (if unsure, you can fill in the same as the OJ URL)
+  - OJ username and password
+  - AI chat address (you need to register and log in to [360bot](https://bot.n.cn/), then create a chat page and copy the URL)
+  - Browser type (Chrome/Edge/Firefox)
+- Browser driver path
 
-### 3. Automated Problem-Solving  
+### 3. Automated Problem Solving
 
-1. Select "Automated Problem-Solving" from the main menu.  
-2. Choose a mode:  
-   - Practice problems.  
-   - Specified problems.  
-   - All problems.  
-3. The tool will use AI to solve and submit the problems automatically.  
+1. Select "Automated Problem Solving" from the main menu
+2. Choose the problem-solving mode as prompted:
 
-### 4. Account Management  
+- Solve training problems
+  - Solve specified problems
+  - Solve all problems
 
-1. Select "Ban Accounts" from the main menu.  
-2. Choose an operation mode:  
-   - Ban all accounts (with optional whitelist).  
-   - Ban specified accounts.  
+3. Log in to 360bot and click the "Logged in to 360bot button"
 
-## Technical Implementation  
+4. The program will automatically use AI to solve problems and submit solutions.
 
-- **Frontend**: HTML/CSS/JavaScript (pure, *because I don’t know Vue*), providing an intuitive web interface.  
-- **Backend**: Python + FastAPI, offering RESTful API services.  
-- **Automation**: Selenium for browser automation.  
-- **AI Integration**: 360bot for code generation.  
-- **Data Storage**: JSON files for saving user configurations.  
+### 4. Account Management
 
-## Developer Tools  
+1. Select "Ban Other Accounts" from the main menu.
+2. Enter the username to be banned as prompted.
+3. The program will automatically perform the ban operation.
 
-The project includes the following developer tools:  
+## Important Notes
 
-- `tool/install_packages.bat`: Installs required Python dependencies automatically.  
-- `tool/minifier.py`: Static file compression tool.  
-- `tool/packaging.py`: Uses Nuitka for packaging.  
+1. This tool is for learning and exchange purposes only. Please comply with the terms of use of all OJ platforms and Nano AI.
+2. The user is solely responsible for any consequences resulting from the use of this tool.
+3. Please use AI-assisted features responsibly to avoid overburdening AI services.
+4. It is recommended to back up important data before use.
+5. If you encounter problems, please check the console output or log files.
 
-## Contributing  
+## FAQ
 
-1. Fork the repository.  
-2. Create a Pull Request.  
-3. Star the project :)  
+### 1. Unable to Start Web Interface
 
-## Disclaimer  
+Possible Causes:
 
-This tool is for learning and research purposes only. Do not use it for any activities that violate academic integrity or relevant regulations. Users bear full responsibility for any consequences arising from its use.  
+- WebView2 runtime environment is not installed (Windows 10/11 usually comes with it)
+- Port is occupied (default uses port 1146)
+- Firewall blocking the program from running
 
-This tool employs web scraping to retrieve information from 360bot (Nano AI). If your use of this tool infringes upon the rights of *Beijing Qihu Technology Co., Ltd.*, you are solely responsible, and the HOJ Tool developer bears no liability.  
+Solution:
 
-## License  
+- Install Microsoft Edge WebView2 Runtime
+- Check port occupancy
+- Add the program to the firewall whitelist
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+### 2. Browser Driver Issues
+
+Possible causes:
+
+- Driver version does not match browser version
+- Incompatible system
+- Incorrect driver path configuration
+- Corrupted driver file
+
+Solution:
+
+- Download the driver that matches your browser version
+- Check frameworks like X86, and ensure they match the system
+- Check and correctly configure the driver path
+- Re-download the driver file
+
+<sub>Can you give it a star? 🌟</sub>
