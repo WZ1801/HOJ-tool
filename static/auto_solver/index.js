@@ -19,14 +19,12 @@ function showModal(message, type = 'success') {
         modal.classList.add('show');
     });
 
-    // 添加点击遮罩层关闭
     modalOverlay.onclick = (e) => {
         if (e.target === modalOverlay) {
             closeModal();
         }
     };
 
-    // 添加ESC键关闭
     const escHandler = (e) => {
         if (e.key === 'Escape') {
             closeModal();
@@ -36,7 +34,6 @@ function showModal(message, type = 'success') {
     document.addEventListener('keydown', escHandler);
 }
 
-// 关闭模态框
 function closeModal() {
     const modal = document.getElementById('modal');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -44,7 +41,6 @@ function closeModal() {
     modal.classList.remove('show');
     setTimeout(() => {
         modalOverlay.classList.remove('show');
-        // 清除事件监听
         modalOverlay.onclick = null;
     }, 300);
 }
@@ -56,7 +52,6 @@ async function checkConfig() {
         const result = await response.json();
         
         if (result.status !== 'success') {
-            // 显示错误信息并添加确认按钮
             showConfigErrorModal('配置文件错误: ' + result.msg);
         }
     } catch (error) {
@@ -65,14 +60,12 @@ async function checkConfig() {
     }
 }
 
-// 显示配置错误模态框
 function showConfigErrorModal(message) {
     const modal = document.getElementById('modal');
     const modalOverlay = document.getElementById('modalOverlay');
     const modalContent = document.getElementById('modalContent');
     const modalIcon = document.getElementById('modalIcon');
     
-    // 清空现有内容
     const modalActions = document.querySelector('.modal-actions');
     if (modalActions) {
         modalActions.remove();
@@ -95,7 +88,6 @@ function showConfigErrorModal(message) {
     modal.className = 'modal error';
     modalIcon.className = 'bi bi-x-circle';
     
-    // 添加按钮到模态框
     modal.appendChild(actionsDiv);
     
     modalOverlay.classList.add('show');
@@ -103,7 +95,6 @@ function showConfigErrorModal(message) {
         modal.classList.add('show');
     });
     
-    // 添加点击遮罩层关闭
     modalOverlay.onclick = (e) => {
         if (e.target === modalOverlay) {
             closeModal();
@@ -111,7 +102,6 @@ function showConfigErrorModal(message) {
         }
     };
     
-    // 添加ESC键关闭
     const escHandler = (e) => {
         if (e.key === 'Escape') {
             closeModal();
@@ -164,15 +154,11 @@ function updateLogs() {
                     logs = JSON.parse(data.log);
                 } catch (e) {
                     // 如果解析失败，按原来的纯文本方式处理
-                    logContent.innerHTML = data.log.split('\\n').join('<br>');
+                    logContent.innerHTML += data.log.split('\\n').join('<br>');
                     logContainer.scrollTop = logContainer.scrollHeight;
                     return;
                 }
                 
-                // 清空现有内容
-                logContent.innerHTML = '';
-                
-                // 为每条日志创建带颜色的元素
                 logs.forEach(logEntry => {
                     const logElement = document.createElement('div');
                     logElement.textContent = logEntry.message;
@@ -215,7 +201,7 @@ function updateLogs() {
         });
 }
 
-// 创建登录按钮
+// 登录按钮
 function createLoginButton() {
     const container = document.getElementById('loginButtonContainer');
     if (!document.getElementById('loginButton')) {
