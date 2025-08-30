@@ -64,7 +64,7 @@ except Exception as e:
 # 封号函数
 def ban(username) -> None:
     for i in range(25):
-        if login(username, 'esnb') == '对不起！登录失败次数过多！您的账号有风险，半个小时内暂时无法登录！':
+        if login(username, 'Attack from HOJ Tool') == '对不起！登录失败次数过多！您的账号有风险，半个小时内暂时无法登录！':
             send_log('success', f"{username}封禁成功！")
             return
     send_log('warning', f"{username}可能是空号号不存在或平台禁用封禁。")
@@ -86,6 +86,7 @@ def login(username, password):
     return response.json()['msg']
 
 def ban_account(mode: str, arg=None) -> None:
+    global log_mode
     if mode == 'all':
         if arg is None:
             log_mode = 1
