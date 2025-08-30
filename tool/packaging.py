@@ -21,7 +21,7 @@ try:
     env['LC_ALL'] = 'C.UTF-8'
 
     # 构建命令 - 优化打包参数以提高性能
-    command = f"{sys.executable} -m nuitka main.py --standalone --include-data-dir=static=static --lto=yes --product-name=\"HOJ tool\" --product-version=4.0.1 --windows-icon-from-ico=./main.ico --copyright=EchoSearch-MIT --enable-plugin=tk-inter --windows-disable-console --experimental=use_pefile --experimental=use_pefile_recurse --experimental=use_pefile_fullrecurse"
+    command = f"{sys.executable} -m nuitka main.py --standalone --include-data-dir=static=static --lto=yes --product-name=\"HOJ tool\" --product-version=4.0.2 --windows-icon-from-ico=./main.ico --copyright=EchoSearch-MIT --enable-plugin=tk-inter --windows-disable-console --experimental=use_pefile --experimental=use_pefile_recurse --experimental=use_pefile_fullrecurse"
 
     print(f"正在打包程序...\n命令：{command}")
 
