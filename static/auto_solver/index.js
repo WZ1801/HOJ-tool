@@ -10,14 +10,19 @@ function showModal(message, type = 'success') {
     const modalContent = document.getElementById('modalContent');
     const modalIcon = document.getElementById('modalIcon');
 
+    if (!modal || !modalOverlay || !modalContent || !modalIcon) {
+        console.warn('Modal elements not found');
+        return;
+    }
+
     modalContent.textContent = message;
     modal.className = `modal ${type}`;
     modalIcon.className = `bi ${type === 'success' ? 'bi-check-circle' : 'bi-x-circle'}`;
 
     modalOverlay.classList.add('show');
-    requestAnimationFrame(() => {
+    setTimeout(() => {
         modal.classList.add('show');
-    });
+    }, 10);
 
     modalOverlay.onclick = (e) => {
         if (e.target === modalOverlay) {
@@ -38,6 +43,10 @@ function closeModal() {
     const modal = document.getElementById('modal');
     const modalOverlay = document.getElementById('modalOverlay');
     
+    if (!modal || !modalOverlay) {
+        return;
+    }
+    
     modal.classList.remove('show');
     setTimeout(() => {
         modalOverlay.classList.remove('show');
@@ -45,7 +54,6 @@ function closeModal() {
     }, 300);
 }
 
-// 检查配置文件
 async function checkConfig() {
     try {
         const response = await fetch('/api/config_ok');
@@ -65,6 +73,11 @@ function showConfigErrorModal(message) {
     const modalOverlay = document.getElementById('modalOverlay');
     const modalContent = document.getElementById('modalContent');
     const modalIcon = document.getElementById('modalIcon');
+    
+    if (!modal || !modalOverlay || !modalContent || !modalIcon) {
+        alert(message);
+        return;
+    }
     
     const modalActions = document.querySelector('.modal-actions');
     if (modalActions) {
@@ -91,9 +104,9 @@ function showConfigErrorModal(message) {
     modal.appendChild(actionsDiv);
     
     modalOverlay.classList.add('show');
-    requestAnimationFrame(() => {
+    setTimeout(() => {
         modal.classList.add('show');
-    });
+    }, 10);
     
     modalOverlay.onclick = (e) => {
         if (e.target === modalOverlay) {
@@ -114,24 +127,27 @@ function showConfigErrorModal(message) {
 
 // 更新状态显示
 function updateStatus() {
-    const runningStatus = document.getElementById('runningStatus');
-    const aiLoginStatus = document.getElementById('aiLoginStatus');
-    const stopButton = document.getElementById('stopButton');
-    
     fetch('/api/auto_solver/status')
         .then(response => response.json())
         .then(data => {
             isRunning = data.is_running;
             isAiLoggedIn = data.is_login_360ai;
             
-            runningStatus.textContent = isRunning ? '运行中' : '未运行';
-            aiLoginStatus.textContent = isAiLoggedIn ? '已登录' : '未登录';
-            stopButton.disabled = !isRunning;
+            const runningStatus = document.getElementById('runningStatus');
+            const aiLoginStatus = document.getElementById('aiLoginStatus');
+            const stopButton = document.getElementById('stopButton');
+            const statusSection = document.getElementById('statusSection');
+            
+            if (runningStatus) runningStatus.textContent = isRunning ? '运行中' : '未运行';
+            if (aiLoginStatus) aiLoginStatus.textContent = isAiLoggedIn ? '已登录' : '未登录';
+            if (stopButton) stopButton.disabled = !isRunning;
 
-            if (isRunning) {
-                document.getElementById('statusSection').classList.add('running');
-            } else {
-                document.getElementById('statusSection').classList.remove('running');
+            if (statusSection) {
+                if (isRunning) {
+                    statusSection.classList.add('running');
+                } else {
+                    statusSection.classList.remove('running');
+                }
             }
         })
         .catch(error => {
@@ -147,6 +163,10 @@ function updateLogs() {
             if (data.status === 'success' && data.log) {
                 const logContainer = document.getElementById('logContainer');
                 const logContent = document.querySelector('.log-content');
+                
+                if (!logContainer || !logContent) {
+                    return;
+                }
                 
                 // 解析日志数据
                 let logs;
@@ -164,7 +184,6 @@ function updateLogs() {
                     logElement.textContent = logEntry.message;
                     logElement.classList.add('log-entry', logEntry.type);
                     
-                    // 根据日志类型设置样式
                     switch (logEntry.type) {
                         case 'success':
                             logElement.style.color = '#28a745';
@@ -204,6 +223,10 @@ function updateLogs() {
 // 登录按钮
 function createLoginButton() {
     const container = document.getElementById('loginButtonContainer');
+    if (!container) {
+        return;
+    }
+    
     if (!document.getElementById('loginButton')) {
         const button = document.createElement('button');
         button.id = 'loginButton';
