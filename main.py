@@ -85,7 +85,7 @@ def get_user_data() -> None:
 def main():
     init(autoreset=True)
     system('cls')
-    system('title HOJ Tool v4.0.2')
+    system('title HOJ Tool v4.0.3')
     # print(Fore.BLUE + '欢迎使用HOJ Tool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
     if '-console' in argv:
         mode = None

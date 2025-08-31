@@ -1,6 +1,6 @@
 [project]
 name = "hoj-tool"
-version = "4.0.2"
+version = "4.0.3"
 description = "An automated tool for HOJ-like Online Judge systems with AI-powered problem solving capabilities"
 readme = "README.md"
 license = { file = "LICENSE" }
