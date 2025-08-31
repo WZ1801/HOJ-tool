@@ -21,7 +21,7 @@ from routers import pages, api
 
 # 创建FastAPI实例
 app = FastAPI(
-    title="HOJtool Web API",
+    title="HOJ Tool Web API",
     description="HOJ Tool的Web界面API",
     version="1.0.0"
 )

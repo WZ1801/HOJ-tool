@@ -669,6 +669,75 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
             except Exception as e:
                 send_log('error', f'获取问题时出错:{str(e)}')
                 continue
+            
+            # 新增代码复用逻辑
+            headers = {
+                'accept': 'application/json, text/plain, */*',
+                'cache-control': 'no-cache',
+                'content-type': 'application/json;charset=utf-8',
+                'pragma': 'no-cache',
+                'sec-gpc': '1',
+                'url-type': 'general',
+                'Cookie': f'JSESSIONID={jsessionid_cookie}',
+                'Referer': f"{user_data['OJ']['URL']}/status"
+            }
+            params = {
+                'onlyMine': 'false',
+                'problemID': pid,
+                'currentPage': 1,
+                'limit': 10000,
+                'completeProblemID': 'false'
+            }
+            try:
+                response = requests.get(
+                    f"{user_data['OJ']['APIURL']}/api/get-submission-list",
+                    headers=headers,
+                    params=params
+                ).json()
+                
+                if not response:
+                    send_log('warning', '代码查询失败: get-submission-list API 返回空响应.')
+                else:
+                    # 查找符合条件的提交记录
+                    records = response.get('data', {}).get('records')
+                    target_submit = None
+                    if records:
+                        target_submit = next((s for s in records 
+                                        if s.get('displayPid') == pid and s.get('status') == 0), None)
+                                    
+                    if target_submit:
+                        resubmit_res = requests.get(
+                            f"{user_data['OJ']['APIURL']}/api/resubmit",
+                            params={'submitId': target_submit.get('submitId')},
+                            headers=headers
+                        ).json()
+                        
+                        if not resubmit_res:
+                            send_log('warning', '代码查询失败: resubmit API 返回空响应.')
+                        elif resubmit_res.get('status') == 200:
+                            code_data = resubmit_res.get('data')
+                            if code_data and code_data.get('code') and code_data.get('language'):
+                                submit_list.append([
+                                    code_data['code'],
+                                    jsessionid_cookie,
+                                    pid,
+                                    code_data['language'],
+                                    False  # 禁用回调
+                                ])
+                                send_log('success', f'发现历史AC代码并提交（SubmitID:{target_submit.get("submitId")}）')
+                                continue  # 跳过AI生成
+                            else:
+                                send_log('warning', '代码查询失败: resubmit API 响应中缺少代码或语言信息.')
+                        else:
+                            send_log('warning', f'代码查询失败: resubmit API 返回错误: {resubmit_res.get("msg")}')
+            except TypeError as e:
+                if "'NoneType' object is not subscriptable" in str(e):
+                    send_log('warning', "代码查询失败:'NoneType'object is not subscriptable")
+                else:
+                    send_log('warning', f'代码查询失败 (类型错误): {e}')
+            except Exception as e:
+                send_log('warning', f'代码查询失败: {str(e)}')
+            
             sleep(0.5)
             textarea = driver.find_element(By.XPATH, "//textarea[last()]")
             textarea.click()

@@ -9,9 +9,9 @@ from sys import argv
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
 
 def get_user_data() -> None:
-    '''
+    """
     获取用户数据
-    '''
+    """
     global user_data_path, options, user_data
     user_data = {
         'OJ': {'URL': None, 'APIURL': None, 'username': None, 'password': None},
@@ -29,7 +29,7 @@ def get_user_data() -> None:
             r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
             r'localhost|'  # localhost...
             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...or ipv4
-            r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...or ipv6
+            r'\[?[A-F0-9]*:[A-F0-9:]+]?)'  # ...or ipv6
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         return re.match(regex, url) is not None
@@ -85,13 +85,13 @@ def get_user_data() -> None:
 def main():
     init(autoreset=True)
     system('cls')
-    system('title HOJtool v4.0.2')
-    # print(Fore.BLUE + '欢迎使用HOJtool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
+    system('title HOJ Tool v4.0.2')
+    # print(Fore.BLUE + '欢迎使用HOJ Tool v4.0\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n回车进入WebGUI模式\n' + Style.RESET_ALL)
     if '-console' in argv:
         mode = None
         while mode != '4':
             system('cls')
-            print(Fore.BLUE + '欢迎使用HOJtool v4.0 Console Mode！\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
+            print(Fore.BLUE + '欢迎使用HOJ Tool v4.0 Console Mode！\n作者：EchoSearch\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.配置信息\n2.自动刷题\n3.封禁他人账号\n4.退出\n' + Style.RESET_ALL)
             mode = input('请输入序号:')
             system('cls')
             if mode == '1':
