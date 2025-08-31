@@ -1,4 +1,4 @@
-import jsmin
+import rjsmin
 import os
 import re
 
@@ -11,8 +11,7 @@ def minify_js_file(input_path, output_path=None):
     with open(input_path, 'r', encoding='utf-8') as js_file:
         js_content = js_file.read()
     
-    # 使用jsmin压缩JS代码
-    minified_js = jsmin.jsmin(js_content)
+    minified_js = rjsmin.jsmin(js_content)
     
     # 写入压缩后的文件（覆盖原文件）
     with open(output_path, 'w', encoding='utf-8') as min_file:
