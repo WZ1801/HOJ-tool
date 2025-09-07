@@ -4,10 +4,13 @@ from os import system
 from json import load
 import requests
 import sys
+import threading
+import queue
+import time
 
 def send_log(type: str = 'info', message: str = '') -> None:
     try:
-        global log_mode  # 使用全局log_mode变量
+        global log_mode
         
         match type:
             case 'info':
@@ -69,6 +72,60 @@ def ban(username) -> None:
             return
     send_log('warning', f"{username}可能是空号号不存在或平台禁用封禁。")
 
+# 线程工作函数
+def worker_thread(username_queue, stop_event):
+    while not stop_event.is_set():
+        try:
+            username = username_queue.get_nowait()
+        except queue.Empty:
+            break
+            
+        if stop_event.is_set():
+            break
+            
+        ban(username)
+        username_queue.task_done()
+
+# 线程池管理函数
+def process_with_threads(usernames, thread_count=5):
+    username_queue = queue.Queue()
+    stop_event = threading.Event()
+    threads = []
+    
+    # 将用户名添加到队列
+    for username in usernames:
+        username_queue.put(username)
+    
+    # 创建并启动线程
+    for _ in range(thread_count):
+        thread = threading.Thread(target=worker_thread, args=(username_queue, stop_event))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+    
+    # 等待所有任务完成或停止事件
+    try:
+        while not username_queue.empty() and not stop_event.is_set():
+            # 检查停止标志
+            if log_mode == 2:
+                try:
+                    status_response = requests.get("http://127.0.0.1:1146/api/ban_account/status", timeout=2)
+                    if status_response.json().get('stop_flag') == True:
+                        stop_event.set()
+                        requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                        break
+                except:
+                    pass
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        stop_event.set()
+    
+    # 等待所有线程完成
+    for thread in threads:
+        thread.join(timeout=1)
+    
+    return stop_event.is_set()
+
 def login(username, password):
     headers = {
         'Accept': 'application/json',
@@ -124,13 +181,32 @@ def ban_account(mode: str, arg=None) -> None:
             send_log('error', f"获取排行榜响应JSON结构不符合预期：{json_data}")
             return
         
+        # 收集需要封禁的用户名
+        usernames_to_ban = []
         for i in json_data['data']['records']: 
-            if log_mode == 2 and requests.get("http://127.0.0.1:1146/api/ban_account/status").json()['stop_flag'] == True:
-                requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
-                break
+            if log_mode == 2:
+                try:
+                    status_response = requests.get("http://127.0.0.1:1146/api/ban_account/status", timeout=2)
+                    if status_response.json().get('stop_flag') == True:
+                        requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                        return
+                except:
+                    pass
+            
             if i['username'] in white_list:
                 continue
-            ban(i['username'])
+            usernames_to_ban.append(i['username'])
+        
+        # 使用线程池处理封禁
+        if usernames_to_ban:
+            send_log('info', f"开始使用5线程封禁 {len(usernames_to_ban)} 个用户...")
+            stopped = process_with_threads(usernames_to_ban, 5)
+            if stopped:
+                send_log('warning', "封禁过程被用户停止")
+            else:
+                send_log('success', f"已完成封禁 {len(usernames_to_ban)} 个用户")
+        else:
+            send_log('info', "没有需要封禁的用户")
             
     elif mode == 'assign':
         if arg is None:
@@ -140,13 +216,17 @@ def ban_account(mode: str, arg=None) -> None:
             username = arg.split(',')
             log_mode = 2
             
-        send_log('info', f"开始封禁指定用户：{', '.join(username)}")
+        send_log('info', f"开始使用5线程封禁指定用户：{', '.join(username)}")
         
-        for i in username:
-            if log_mode == 2 and requests.get("http://127.0.0.1:1146/api/ban_account/status").json()['stop_flag'] == True:
-                requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
-                break
-            ban(i)
+        # 使用线程池处理封禁
+        if username:
+            stopped = process_with_threads(username, 5)
+            if stopped:
+                send_log('warning', "封禁过程被用户停止")
+            else:
+                send_log('success', f"已完成封禁 {len(username)} 个指定用户")
+        else:
+            send_log('info', "没有需要封禁的用户")
     if log_mode == 2:
         requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
 

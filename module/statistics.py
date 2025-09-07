@@ -154,7 +154,6 @@ def calculate_statistics(submissions, username=None):
         "language_distribution": sorted(language_distribution.items(), key=lambda item: item[1], reverse=True)
     }
 
-    # 确保当language_distribution为空时返回空列表而不是None
     if not language_distribution:
         result["language_distribution"] = []
 

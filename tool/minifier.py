@@ -28,19 +28,12 @@ def minify_css_file(input_path, output_path=None):
     with open(input_path, 'r', encoding='utf-8') as css_file:
         css_content = css_file.read()
     
-    # 简单的CSS压缩：移除注释、多余的空格和换行符
-    # 移除CSS注释
     css_content = re.sub(r'/\*.*?\*/', '', css_content, flags=re.DOTALL)
-    # 移除多余的空格和换行符
     css_content = re.sub(r'\s+', ' ', css_content)
-    # 移除多余的空格（在特定字符周围）
     css_content = re.sub(r'\s*([{}:;,>+~])\s*', r'\1', css_content)
-    # 移除最后一个分号
     css_content = re.sub(r';}', r'}', css_content)
-    # 去除首尾空格
     css_content = css_content.strip()
     
-    # 写入压缩后的文件（覆盖原文件）
     with open(output_path, 'w', encoding='utf-8') as min_file:
         min_file.write(css_content)
     

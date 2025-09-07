@@ -345,7 +345,6 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
     :return: JSESSIONID cookie值
     """
     driver.get(url)
-    # 尝试最大化窗口，如果失败则忽略
     try:
         driver.maximize_window()
     except Exception as e:
