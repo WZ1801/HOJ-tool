@@ -23,7 +23,8 @@ PAGES = {
     "/home": ("home", "index.html"),
     "/auto_solver": ("auto_solver", "index.html"),
     "/ban_account": ("ban_account", "index.html"),
-    "/settings": ("settings", "index.html")
+    "/settings": ("settings", "index.html"),
+    "/statistics": ("statistics", "index.html")
 }
 
 # 统一的页面路由处理

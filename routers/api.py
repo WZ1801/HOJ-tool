@@ -8,6 +8,7 @@ from fastapi import Request
 from os import path as pt
 from json import load
 from sys import argv
+from module.statistics import get_statistics, clear_cache
 router = APIRouter()
 user_data_path = pt.join(pt.dirname(pt.normpath(argv[0])), 'user_data.json')
 
@@ -412,3 +413,15 @@ async def get_log1() -> JSONResponse:
             status_code=500,
             content={"status": "error", "msg": f"获取日志失败: {str(e)}"}
         )
+
+@router.get("/statistics", summary="获取统计信息")
+async def statistics(username: str = None):
+    """获取统计信息"""
+    result = get_statistics(username)
+    return result
+
+@router.get("/statistics/clear_cache", summary="清空统计信息缓存")
+async def clear_statistics_cache():
+    """清空统计信息缓存"""
+    clear_cache()
+    return {"status": "success", "msg": "缓存已清空"}

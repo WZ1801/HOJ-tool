@@ -47,6 +47,7 @@ static_paths = {
     "/home": "home",
     "/auto_solver": "auto_solver",
     "/ban_account": "ban_account",
+    "/statistics": "statistics",
     "/css": "css"
 }
 

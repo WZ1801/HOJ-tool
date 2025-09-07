@@ -14,7 +14,6 @@
         };
     }
 
-    // Polyfill for Array.from()
     if (!Array.from) {
         Array.from = (function () {
             var toStr = Object.prototype.toString;
@@ -71,7 +70,6 @@
         }());
     }
 
-    // Polyfill for NodeList.forEach
     if (window.NodeList && !NodeList.prototype.forEach) {
         NodeList.prototype.forEach = function (callback, thisArg) {
             thisArg = thisArg || window;
@@ -81,7 +79,6 @@
         };
     }
 
-    // Polyfill for fetch (simplified version)
     if (!window.fetch) {
         window.fetch = function(url, options) {
             options = options || {};
@@ -89,7 +86,6 @@
                 var xhr = new XMLHttpRequest();
                 xhr.open(options.method || 'GET', url);
                 
-                // Set headers
                 if (options.headers) {
                     for (var header in options.headers) {
                         xhr.setRequestHeader(header, options.headers[header]);
@@ -193,7 +189,6 @@ window.Compatibility = {
     checkBrowserSupport: function() {
         var unsupported = [];
         
-        // Check for required features
         if (!window.fetch) {
             unsupported.push('fetch API');
         }
@@ -224,7 +219,6 @@ window.Compatibility = {
         
         console.warn(message);
         
-        // Create warning element
         var warningDiv = document.createElement('div');
         warningDiv.style.cssText = `
             position: fixed;
@@ -243,7 +237,6 @@ window.Compatibility = {
             <a href="#" onclick="this.parentElement.style.display='none';return false;" style="float:right;color:#333;">×</a>
         `;
         
-        // Insert as first element in body
         if (document.body.firstChild) {
             document.body.insertBefore(warningDiv, document.body.firstChild);
         } else {
@@ -251,7 +244,6 @@ window.Compatibility = {
         }
     },
     
-    // Initialize compatibility checks
     init: function() {
         var unsupported = this.checkBrowserSupport();
         if (unsupported.length > 0) {
