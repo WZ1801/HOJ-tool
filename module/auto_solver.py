@@ -356,7 +356,7 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
             pass
     
     driver.implicitly_wait(10)
-    login_button = driver.find_element(By.XPATH, '//*[@id="header"]/ul/div[2]/button')
+    login_button = driver.find_element(By.XPATH, '//span[contains(text(), "登录")]')
     login_button.click()
     find_boby = driver.find_element(By.XPATH, "//input[@placeholder='用户名']")
     find_boby.send_keys(username)
