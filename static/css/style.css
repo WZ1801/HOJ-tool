@@ -21,12 +21,12 @@ body {
     z-index: 1000;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    position: -webkit-sticky;
+}
+
+.top-nav .container {
     display: flex;
     justify-content: center;
     gap: 25px;
-    display: -webkit-flex;
-    -webkit-justify-content: center;
 }
 
 .top-nav a {
@@ -43,10 +43,6 @@ body {
     overflow: hidden;
     letter-spacing: 0.5px;
     font-size: 15px;
-    
-    display: -webkit-flex;
-    -webkit-align-items: center;
-    -webkit-transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .top-nav a:hover {
