@@ -4,6 +4,7 @@ from os import path as pt
 from os import system
 from json import dump
 from sys import argv
+from tools.port_utils import get_default_port, get_available_port
 
 # 配置文件路径
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
@@ -113,7 +114,12 @@ def main():
         import server
         from threading import Thread
 
-        server_thread = Thread(target=server.start_server)
+        # 获取可用端口
+        port = get_default_port()
+        print(f'{Fore.GREEN}服务器将使用端口: {port}{Style.RESET_ALL}')
+
+        # 启动服务器线程，传递端口参数
+        server_thread = Thread(target=server.start_server, args=(port,))
         server_thread.daemon = True
         server_thread.start()
 
@@ -122,7 +128,7 @@ def main():
             os._exit(0)
 
         try:
-            window = webview.create_window('HOJ tool', 'http://127.0.0.1:1146', maximized=True)
+            window = webview.create_window('HOJ tool', f'http://127.0.0.1:{port}', maximized=True)
             window.events.closing += on_closing
             webview.start()
         except Exception as e:
