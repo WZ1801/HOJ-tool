@@ -53,39 +53,45 @@ def initt():
         system('pause')
         exit()
 
-def send_log(type: str = 'info', message: str = '') -> None:
+def send_log(type: str = 'info', message: str = '', pid: str = None, submit_id: str = None) -> None:
     try:
+        formatted_message = message
+        if pid:
+            formatted_message = f"{formatted_message} -> {pid}"
+        if submit_id:
+            formatted_message = f"{formatted_message} -> {submit_id}"
+            
         match type:
             case 'info':
                 match log_mode:
                     case 1:
-                        print(message)
+                        print(formatted_message)
                     case 2:
-                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'info', 'message': message})
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'info', 'message': formatted_message})
             case 'success':
                 match log_mode:
                     case 1:
-                        print(Fore.GREEN + message + Style.RESET_ALL)
+                        print(Fore.GREEN + formatted_message + Style.RESET_ALL)
                     case 2:
-                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'success', 'message': message})
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'success', 'message': formatted_message})
             case 'warning':
                 match log_mode:
                     case 1:
-                        print(Fore.YELLOW + message + Style.RESET_ALL)
+                        print(Fore.YELLOW + formatted_message + Style.RESET_ALL)
                     case 2:
-                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'warning', 'message': message})
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'warning', 'message': formatted_message})
             case 'error':
                 match log_mode:
                     case 1:
-                        print(Fore.RED + message + Style.RESET_ALL)
+                        print(Fore.RED + formatted_message + Style.RESET_ALL)
                     case 2:
-                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'error', 'message': message})
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'error', 'message': formatted_message})
             case 'debug':
                 match log_mode:
                     case 1:
-                        print(Fore.BLUE + message + Style.RESET_ALL)
+                        print(Fore.BLUE + formatted_message + Style.RESET_ALL)
                     case 2:
-                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'debug', 'message': message})
+                        requests.post('http://127.0.0.1:1146/api/auto_solver/log', json={'type': 'debug', 'message': formatted_message})
     except: 
         pass
 
@@ -210,7 +216,7 @@ def get_problem_saying(pid: str, notes: str) -> str:
         
         # 检查HTTP响应状态
         if response.status_code != 200:
-            send_log('error', f'获取问题失败，HTTP状态码: {response.status_code}')
+            send_log('error', '获取问题失败', pid=pid)
             return ""
         
         # 解析JSON响应
@@ -218,21 +224,21 @@ def get_problem_saying(pid: str, notes: str) -> str:
         
         # 检查响应结构
         if not response_data or 'data' not in response_data or 'problem' not in response_data['data']:
-            send_log('error', f'响应数据结构不正确: {response_data}')
+            send_log('error', '响应数据结构不正确', pid=pid)
             return ""
         
         problem = response_data['data']['problem']
         
         # 检查problem是否为None
         if problem is None:
-            send_log('error', '获取到的problem数据为None')
+            send_log('error', '获取到的problem数据为None', pid=pid)
             return ""
         
         # 检查必要的字段是否存在
         required_fields = ['description', 'input', 'output', 'examples']
         for field in required_fields:
             if field not in problem:
-                send_log('error', f'problem数据缺少必要字段: {field}')
+                send_log('error', f'problem数据缺少必要字段: {field}', pid=pid)
                 return ""
         
         problem_str = (
@@ -259,13 +265,13 @@ def get_problem_saying(pid: str, notes: str) -> str:
             .replace("\n", "\\n")
         )
     except requests.RequestException as e:
-        send_log('error', f'网络请求出错: {str(e)}')
+        send_log('error', '网络请求出错', pid=pid)
         return ""
     except KeyError as e:
-        send_log('error', f'响应数据缺少键值: {str(e)}')
+        send_log('error', '响应数据缺少键值', pid=pid)
         return ""
     except Exception as e:
-        send_log('error', f'获取问题时出错: {str(e)}')
+        send_log('error', '获取问题时出错', pid=pid)
         return ""
 
 # 获取训练集题目ID
@@ -349,7 +355,7 @@ def login_and_get_cookie(driver: webdriver.Chrome, url: str, username: str, pass
         driver.maximize_window()
     except Exception as e:
         global log_mode
-        send_log("warning", f"无法最大化窗口:{e}")
+        send_log("warning", "无法最大化窗口")
         try:
             driver.set_window_size(1920, 1080)
         except Exception:
@@ -404,11 +410,11 @@ def submit_code(code: str, JESSIONID: str, pid: str, lang: str) -> int:
         }
         response = requests.post(url=f"{user_data['OJ']['APIURL']}/api/submit-problem-judge", headers=headers, json=data)
         if response.status_code != 200:
-            send_log('error', f'提交代码请求失败,状态码：{response.status_code}')
+            send_log('error', '提交代码请求失败', pid==str(pid))
             return False
         return response.json()['data']['submitId']
     except Exception as e:
-        send_log('warning', f'提交代码失败{e}')
+        send_log('warning', '提交代码失败')
         return False
 
 def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int = 30, interval: float = 1): 
@@ -440,10 +446,10 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
             )
             sleep(interval)
             if time() - start_time > timeout:
-                send_log('warning', f'回调查询超时')
+                send_log('warning', '回调查询超时', pid=pid)
                 return
     except Exception as e:
-        send_log('warning', f'回调查询失败:{e}')
+        send_log('warning', '回调查询失败', pid=pid)
         return
     
     response = requests.get(
@@ -454,7 +460,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     )
     try:
         if str(response.json()['data']['submission']['status']) != '0':
-            send_log('warning', f'{pid}:AI Wrong Answer!')
+            send_log('warning', 'AI Unaccepted', pid=pid, submit_id=str(submitId))
             response = requests.get(
                 f'{user_data["OJ"]["APIURL"]}/api/get-all-case-result',
                 params=params,
@@ -477,16 +483,17 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
                 KillerCode += f'and print("{judgeCase[1].replace(chr(92), chr(92)*2).replace(chr(10), chr(92)+"n").replace(chr(39), chr(92)+chr(39)).replace(chr(34), chr(92)+chr(34))}")'
             
             if is_first_if:
-                send_log('warning', f'回调提交失败: 数据点过长')
+                # send_log('warning', f'回调提交失败: 数据点过长')
                 return
 
             submit_list.append([KillerCode, JSESSIONID, pid, 'Python3', False])
-            send_log('success', f'回调抢救成功,结果未知')
+            send_log('success', '回调抢救成功,结果未知', pid=pid)
         else:
-            send_log('success', f'AI Accepted!')
+            send_log('success', 'AI Accepted', pid=pid, submit_id=str(submitId))
             
     except Exception as e:
-        send_log('warning', f'回调提交失败: {e}')
+        # send_log('warning', f'回调提交失败: {e}')
+        return
 
 def all_code(is_web_call=False) -> None:
     global is_init
@@ -592,11 +599,11 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
     tidlist = tids.split(',')
     if tidlist[0] != '':
         for tid in tidlist:
-            send_log('info', f'开始训练:{tid}')
+            send_log('info', '开始训练', pid=tid)
             try:
                 pids = get_training_pids(tid, jsessionid_cookie)
             except Exception as e:
-                send_log('error', f'获取训练题目ID时出错:{str(e)}')
+                send_log('error', '获取训练题目ID时出错')
                 continue
             # 调用 problem_code 处理每个 pid
             problem_code(driver=driver, pids=",".join(map(str, pids)), notes=notes, jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call, web_call_mode=(2 if is_web_call and web_call_mode == 2 else 1))
@@ -616,7 +623,6 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
         initt()
         is_init = True
     global log_mode
-    # 提交代码线程
     global submit_T
     if submit_T is None: 
         submit_T = Thread(target=submit_code_thread, daemon=True)
@@ -666,7 +672,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
             try:
                 problem = get_problem_saying(pid, notes)
             except Exception as e:
-                send_log('error', f'获取问题时出错:{str(e)}')
+                send_log('error', '获取问题时出错', pid=pid)
                 continue
             
             # 新增代码复用逻辑
@@ -695,7 +701,8 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                 ).json()
                 
                 if not response:
-                    send_log('warning', '代码查询失败: get-submission-list API 返回空响应.')
+                    # send_log('warning', '代码查询失败: get-submission-list API 返回空响应.')
+                    pass
                 else:
                     # 查找符合条件的提交记录
                     records = response.get('data', {}).get('records')
@@ -712,7 +719,8 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                         ).json()
                         
                         if not resubmit_res:
-                            send_log('warning', '代码查询失败: resubmit API 返回空响应.')
+                            # send_log('warning', '代码查询失败: resubmit API 返回空响应.')
+                            return
                         elif resubmit_res.get('status') == 200:
                             code_data = resubmit_res.get('data')
                             if code_data and code_data.get('code') and code_data.get('language'):
@@ -723,19 +731,23 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                                     code_data['language'],
                                     False  # 禁用回调
                                 ])
-                                send_log('success', f'发现历史AC代码并提交（SubmitID:{target_submit.get("submitId")}）')
+                                send_log('success', '发现历史AC代码并提交', pid=pid, submit_id=str(target_submit.get("submitId")))
                                 continue  # 跳过AI生成
                             else:
-                                send_log('warning', '代码查询失败: resubmit API 响应中缺少代码或语言信息.')
+                                # send_log('warning', '代码查询失败: resubmit API 响应中缺少代码或语言信息.')
+                                return
                         else:
-                            send_log('warning', f'代码查询失败: resubmit API 返回错误: {resubmit_res.get("msg")}')
+                            # send_log('warning', f'代码查询失败: resubmit API 返回错误: {resubmit_res.get("msg")}')
+                            return
             except TypeError as e:
-                if "'NoneType' object is not subscriptable" in str(e):
-                    send_log('warning', "代码查询失败:'NoneType'object is not subscriptable")
-                else:
-                    send_log('warning', f'代码查询失败 (类型错误): {e}')
+                # if "'NoneType' object is not subscriptable" in str(e):
+                #     send_log('warning', "代码查询失败:'NoneType'object is not subscriptable")
+                # else:
+                #     send_log('warning', f'代码查询失败 (类型错误): {e}')
+                return
             except Exception as e:
-                send_log('warning', f'代码查询失败: {str(e)}')
+                # send_log('warning', f'代码查询失败: {str(e)}')
+                return
             
             sleep(0.5)
             textarea = driver.find_element(By.XPATH, "//textarea[last()]")
@@ -746,7 +758,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
             textarea.send_keys("\n")
             sleep(7)
             if not is_page_stable(driver):
-                send_log("error", "页面不稳定超时")
+                send_log("error", "页面不稳定超时", pid=pid)
                 driver.refresh()
                 continue
             copy_code(driver)
@@ -769,7 +781,7 @@ def main() -> None:
     submit_T.start()
     mode = None
     while mode != '4':
-        send_log('info', Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.刷训练题目\n2.刷个题\n3.一键刷所有题\n4.退出\n' + Style.RESET_ALL)
+        send_log('info', Fore.BLUE + '欢迎使用OJ自动刷题爬虫！\n作者：Jonsin\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.刷训练题目\n2.刷个题\n3.一键刷所有题\n4.退出\n' + Style.RESET_ALL)
         mode = input('请输入序号:')
         system('cls')
         if mode == '1':

@@ -8,36 +8,42 @@ import threading
 import queue
 import time
 
-def send_log(type: str = 'info', message: str = '') -> None:
+def send_log(type: str = 'info', message: str = '', pid: str = None, submit_id: str = None) -> None:
     try:
         global log_mode
         
+        formatted_message = message
+        if pid:
+            formatted_message = f"{formatted_message} -> {pid}"
+        if submit_id:
+            formatted_message = f"{formatted_message} -> {submit_id}"
+            
         match type:
             case 'info':
                 if log_mode == 1:
-                    print(message)
+                    print(formatted_message)
                 elif log_mode == 2:
-                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'info', 'message': message})
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'info', 'message': formatted_message})
             case 'success':
                 if log_mode == 1:
-                    print(Fore.GREEN + message + Style.RESET_ALL)
+                    print(Fore.GREEN + formatted_message + Style.RESET_ALL)
                 elif log_mode == 2:
-                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'success', 'message': message})
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'success', 'message': formatted_message})
             case 'warning':
                 if log_mode == 1:
-                    print(Fore.YELLOW + message + Style.RESET_ALL)
+                    print(Fore.YELLOW + formatted_message + Style.RESET_ALL)
                 elif log_mode == 2:
-                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'warning', 'message': message})
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'warning', 'message': formatted_message})
             case 'error':
                 if log_mode == 1:
-                    print(Fore.RED + message + Style.RESET_ALL)
+                    print(Fore.RED + formatted_message + Style.RESET_ALL)
                 elif log_mode == 2:
-                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'error', 'message': message})
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'error', 'message': formatted_message})
             case 'debug':
                 if log_mode == 1:
-                    print(Fore.BLUE + message + Style.RESET_ALL)
+                    print(Fore.BLUE + formatted_message + Style.RESET_ALL)
                 elif log_mode == 2:
-                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'debug', 'message': message})
+                    requests.post('http://127.0.0.1:1146/api/ban_account/log', json={'type': 'debug', 'message': formatted_message})
     except: 
         return
 
@@ -235,7 +241,7 @@ def main() -> None:
         mode = None
         while mode != 3:
             system('cls')
-            print(Fore.BLUE + '欢迎使用HOJtool-一键封号！\n作者：WZ一只蚊子\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.封所有账户\n2.封指定账户\n3.退出\n' + Style.RESET_ALL)
+            print(Fore.BLUE + '欢迎使用HOJtool-一键封号！\n作者：Jonsin\nGitee仓库: https://gitee.com/wzokee/hoj-tool\n' + Back.RED + Fore.WHITE + '仅供参考学习!' + Style.RESET_ALL + Fore.GREEN + '\n\n请选择模式:' + Fore.CYAN + '\n1.封所有账户\n2.封指定账户\n3.退出\n' + Style.RESET_ALL)
             mode = input('请输入序号:')
             system('cls')
             if is_user_data_read:
