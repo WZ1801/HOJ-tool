@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const topProblemsCtx = document.getElementById('topProblemsChart').getContext('2d');
     const userStatusCtx = document.getElementById('userStatusChart').getContext('2d');
     const userSubmissionTimeCtx = document.getElementById('userSubmissionTimeChart').getContext('2d');
-    let userRankChart, statusRankChart, submissionTimeChart, topProblemsChart, userStatusChart, userSubmissionTimeChart, userLanguageChart; // 确保userLanguageChart已声明
+    let userRankChart, statusRankChart, submissionTimeChart, topProblemsChart, userStatusChart, userSubmissionTimeChart, userLanguageChart;
     let isLoading = false;
-    let loadingTipInterval = null; // 用于保存提示轮播的定时器
+    let loadingTipInterval = null;
 
-    // 定义加载提示信息数组
+
     const loadingTips = [
         '加载数据中，约一分钟，请耐心等待……',
         '你看什么看，只是条Tip!',
@@ -22,11 +22,11 @@ document.addEventListener('DOMContentLoaded', function () {
         'FIX A BUG TO MAKE A BUG!'
     ];
 
-    // 显示加载提示
+
     function showLoading(show) {
         const container = document.querySelector('.container');
         let loadingDiv = document.getElementById('loading-indicator');
-        
+
         if (show) {
             if (!loadingDiv) {
                 loadingDiv = document.createElement('div');
@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     z-index: 9999;
                     backdrop-filter: blur(2px);
                 `;
-                
-                // 创建旋转动画元素
+
+
                 const spinner = document.createElement('div');
                 spinner.style.cssText = `
                     border: 8px solid #f3f3f3;
@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     animation: spin 1s linear infinite;
                     margin-bottom: 16px;
                 `;
-                
-                // 添加旋转动画
+
+
                 const style = document.createElement('style');
                 style.textContent = `
                     @keyframes spin {
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         100% { transform: rotate(360deg); }
                     }
                 `;
-                
-                // 创建提示文字元素
+
+
                 const tipText = document.createElement('div');
                 tipText.id = 'loading-tip';
                 tipText.style.cssText = `
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     color: #333;
                     animation: fadeInOut 3s ease-in-out infinite;
                 `;
-                
-                // 添加淡入淡出动画
+
+
                 const animationStyle = document.createElement('style');
                 animationStyle.textContent = `
                     @keyframes fadeInOut {
@@ -87,17 +87,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         100% { opacity: 0; transform: translateY(-10px); }
                     }
                 `;
-                
-                // 初始化提示文字
+
+
                 const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
                 tipText.textContent = randomTip;
-                
-                // 添加定时器实现提示文字轮播
+
+
                 loadingTipInterval = setInterval(() => {
                     const currentTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
                     tipText.textContent = currentTip;
-                }, 3000); // 每3秒切换一次提示文字
-                
+                }, 3000);
+
                 loadingDiv.appendChild(spinner);
                 loadingDiv.appendChild(tipText);
                 document.head.appendChild(style);
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (style) {
                     document.head.removeChild(style);
                 }
-                // 清除定时器
+
                 if (loadingTipInterval) {
                     clearInterval(loadingTipInterval);
                     loadingTipInterval = null;
@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // 显示错误模态框
+
     function showErrorModal(message) {
-        // 创建模态框元素
+
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay show';
         modalOverlay.style.cssText = `
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
             border-radius: 4px;
             cursor: pointer;
         `;
-        confirmButton.onclick = function() {
+        confirmButton.onclick = function () {
             document.body.removeChild(modalOverlay);
         };
 
@@ -189,14 +189,14 @@ document.addEventListener('DOMContentLoaded', function () {
         modalOverlay.appendChild(modal);
         document.body.appendChild(modalOverlay);
 
-        // 添加点击遮罩层关闭
+
         modalOverlay.onclick = (e) => {
             if (e.target === modalOverlay) {
                 document.body.removeChild(modalOverlay);
             }
         };
 
-        // 添加ESC键关闭
+
         const escHandler = (e) => {
             if (e.key === 'Escape') {
                 if (document.body.contains(modalOverlay)) {
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 renderStatusRankChart(data.status_ranking);
                 renderSubmissionTimeChart(data.submission_by_hour);
                 renderTopProblemsChart(data.top_problems);
-                // 添加语言分布图表渲染
+
                 if (data.language_distribution && data.language_distribution.length > 0) {
                     renderLanguageChart(data.language_distribution);
                 } else {
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 let label = context.dataset.label || '';
                                 if (label) {
                                     label += ': ';
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         stacked: true,
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
+                            callback: function (value) {
                                 return value.toFixed(2) + '%'
                             }
                         },
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 let label = tooltipItem.label || '';
                                 if (label) {
                                     label += ': ';
@@ -481,11 +481,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderLanguageChart(languageDistribution) {
-        // 添加严格的类型检查
+
         if (languageChart && typeof languageChart.destroy === 'function') {
             languageChart.destroy();
         }
-        
+
         if (!languageDistribution || !Array.isArray(languageDistribution) || languageDistribution.length === 0) {
             console.warn('Invalid language distribution data:', languageDistribution);
             showErrorModal("无效的语言分布数据");
@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const ctx = document.getElementById('languageChart').getContext('2d');
-        
+
         languageChart = new Chart(ctx, {
             type: 'pie',
             data: {
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return `${tooltipItem.label}: ${tooltipItem.raw.toFixed(2)}%`;
                             }
                         }
@@ -538,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Canvas element #userLanguageChart not found');
             return;
         }
-        
+
         if (userLanguageChart instanceof Chart) {
             userLanguageChart.destroy();
         }
@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return `${tooltipItem.label}: ${tooltipItem.raw.toFixed(2)}%`;
                             }
                         }
@@ -581,8 +581,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 修改搜索按钮事件监听器
-    document.getElementById('searchButton').addEventListener('click', function() {
+
+    document.getElementById('searchButton').addEventListener('click', function () {
         const username = document.getElementById('usernameInput').value;
         if (!username) {
             showErrorModal('请输入用户名');
@@ -603,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const userData = data.user_specific;
                     document.getElementById('userResultTitle').textContent = `${userData.username} 的统计`;
                     document.getElementById('userResultSubmissionCount').textContent = `总提交数: ${userData.submission_count}`;
-                    
+
                     renderUserStatusChart(userData.status_percentage);
                     renderUserSubmissionTimeChart(userData.submission_by_hour);
                     renderUserLanguageChart(userData.language_percentage);
@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return `${tooltipItem.label}: ${tooltipItem.raw.toFixed(2)}%`;
                             }
                         }

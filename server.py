@@ -1,15 +1,12 @@
 """
 HOJ Tool Web Server
-
-基于FastAPI的Web服务器，为HOJ Tool提供Web界面
-支持静态文件服务和API接口
 """
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 import os
-
 import sys
 from pathlib import Path
 
@@ -22,11 +19,15 @@ from routers import pages, api
 # 创建FastAPI实例
 app = FastAPI(
     title="HOJ Tool Web API",
-    description="HOJ Tool的Web界面API",
+    description="HOJ Tool Web API",
     version="1.0.0"
 )
 
-# 添加CORS中间件，允许跨域请求
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000,
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -39,7 +40,7 @@ app.add_middleware(
 app.include_router(pages.router)
 app.include_router(api.router, prefix="/api")
 
-# 挂载根路径静态文件服务，用于加载CSS和JS等文件
+# 挂载根路径静态文件
 app.mount("/", StaticFiles(directory="static", html=True, check_dir=False), name="static")
 
 # 静态文件配置
@@ -65,7 +66,9 @@ def start_server() -> None:
         host="127.0.0.1", 
         port=1146,
         log_level="error",
-        access_log=False
+        access_log=False,
+        http="httptools",
+        loop="asyncio",
     )
 
 if __name__ == "__main__":

@@ -1,27 +1,26 @@
-// 全局状态
 let isRunning = false;
 let isAiLoggedIn = false;
 let logUpdateInterval = null;
 
-// 显示模态框
-function showModal(message, type = 'success') {
-    const modal = document.getElementById('modal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modalContent = document.getElementById('modalContent');
-    const modalIcon = document.getElementById('modalIcon');
+function showModal(message, type = "success") {
+    const modal = document.getElementById("modal");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalContent = document.getElementById("modalContent");
+    const modalIcon = document.getElementById("modalIcon");
 
     if (!modal || !modalOverlay || !modalContent || !modalIcon) {
-        console.warn('Modal elements not found');
+        console.warn("Modal elements not found");
         return;
     }
 
     modalContent.textContent = message;
     modal.className = `modal ${type}`;
-    modalIcon.className = `bi ${type === 'success' ? 'bi-check-circle' : 'bi-x-circle'}`;
+    modalIcon.className = `bi ${type === "success" ? "bi-check-circle" : "bi-x-circle"
+        }`;
 
-    modalOverlay.classList.add('show');
+    modalOverlay.classList.add("show");
     setTimeout(() => {
-        modal.classList.add('show');
+        modal.classList.add("show");
     }, 10);
 
     modalOverlay.onclick = (e) => {
@@ -31,332 +30,321 @@ function showModal(message, type = 'success') {
     };
 
     const escHandler = (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closeModal();
-            document.removeEventListener('keydown', escHandler);
+            document.removeEventListener("keydown", escHandler);
         }
     };
-    document.addEventListener('keydown', escHandler);
+    document.addEventListener("keydown", escHandler);
 }
 
 function closeModal() {
-    const modal = document.getElementById('modal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    
+    const modal = document.getElementById("modal");
+    const modalOverlay = document.getElementById("modalOverlay");
+
     if (!modal || !modalOverlay) {
         return;
     }
-    
-    modal.classList.remove('show');
+
+    modal.classList.remove("show");
     setTimeout(() => {
-        modalOverlay.classList.remove('show');
+        modalOverlay.classList.remove("show");
         modalOverlay.onclick = null;
     }, 300);
 }
 
 async function checkConfig() {
     try {
-        const response = await fetch('/api/config_ok');
+        const response = await fetch("/api/config_ok");
         const result = await response.json();
-        
-        if (result.status !== 'success') {
-            showConfigErrorModal('配置文件错误: ' + result.msg);
+
+        if (result.status !== "success") {
+            showConfigErrorModal("配置文件错误: " + result.msg);
         }
     } catch (error) {
-        console.error('检查配置文件时发生错误:', error);
-        showConfigErrorModal('检查配置文件时发生错误: ' + error.message);
+        console.error("检查配置文件时发生错误:", error);
+        showConfigErrorModal("检查配置文件时发生错误: " + error.message);
     }
 }
 
 function showConfigErrorModal(message) {
-    const modal = document.getElementById('modal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modalContent = document.getElementById('modalContent');
-    const modalIcon = document.getElementById('modalIcon');
-    
+    const modal = document.getElementById("modal");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalContent = document.getElementById("modalContent");
+    const modalIcon = document.getElementById("modalIcon");
+
     if (!modal || !modalOverlay || !modalContent || !modalIcon) {
         alert(message);
         return;
     }
-    
-    const modalActions = document.querySelector('.modal-actions');
+
+    const modalActions = document.querySelector(".modal-actions");
     if (modalActions) {
         modalActions.remove();
     }
-    
-    // 创建新的操作按钮容器
-    const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'modal-actions';
-    
-    const confirmButton = document.createElement('button');
-    confirmButton.className = 'modal-button primary';
-    confirmButton.textContent = '确认';
-    confirmButton.onclick = function() {
-        window.location.href = 'http://127.0.0.1:1146';
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "modal-actions";
+
+    const confirmButton = document.createElement("button");
+    confirmButton.className = "modal-button primary";
+    confirmButton.textContent = "确认";
+    confirmButton.onclick = function () {
+        window.location.href = "http://127.0.0.1:1146";
     };
-    
+
     actionsDiv.appendChild(confirmButton);
-    
+
     modalContent.textContent = message;
-    modal.className = 'modal error';
-    modalIcon.className = 'bi bi-x-circle';
-    
+    modal.className = "modal error";
+    modalIcon.className = "bi bi-x-circle";
+
     modal.appendChild(actionsDiv);
-    
-    modalOverlay.classList.add('show');
+
+    modalOverlay.classList.add("show");
     setTimeout(() => {
-        modal.classList.add('show');
+        modal.classList.add("show");
     }, 10);
-    
+
     modalOverlay.onclick = (e) => {
         if (e.target === modalOverlay) {
             closeModal();
-            window.location.href = 'http://127.0.0.1:1146';
+            window.location.href = "http://127.0.0.1:1146";
         }
     };
-    
+
     const escHandler = (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closeModal();
-            window.location.href = 'http://127.0.0.1:1146';
-            document.removeEventListener('keydown', escHandler);
+            window.location.href = "http://127.0.0.1:1146";
+            document.removeEventListener("keydown", escHandler);
         }
     };
-    document.addEventListener('keydown', escHandler);
+    document.addEventListener("keydown", escHandler);
 }
 
-// 更新状态显示
 function updateStatus() {
-    fetch('/api/auto_solver/status')
-        .then(response => response.json())
-        .then(data => {
+    fetch("/api/auto_solver/status")
+        .then((response) => response.json())
+        .then((data) => {
             isRunning = data.is_running;
             isAiLoggedIn = data.is_login_360ai;
-            
-            const runningStatus = document.getElementById('runningStatus');
-            const aiLoginStatus = document.getElementById('aiLoginStatus');
-            const stopButton = document.getElementById('stopButton');
-            const statusSection = document.getElementById('statusSection');
-            
-            if (runningStatus) runningStatus.textContent = isRunning ? '运行中' : '未运行';
-            if (aiLoginStatus) aiLoginStatus.textContent = isAiLoggedIn ? '已登录' : '未登录';
+
+            const runningStatus = document.getElementById("runningStatus");
+            const aiLoginStatus = document.getElementById("aiLoginStatus");
+            const stopButton = document.getElementById("stopButton");
+            const statusSection = document.getElementById("statusSection");
+
+            if (runningStatus)
+                runningStatus.textContent = isRunning ? "运行中" : "未运行";
+            if (aiLoginStatus)
+                aiLoginStatus.textContent = isAiLoggedIn ? "已登录" : "未登录";
             if (stopButton) stopButton.disabled = !isRunning;
 
             if (statusSection) {
                 if (isRunning) {
-                    statusSection.classList.add('running');
+                    statusSection.classList.add("running");
                 } else {
-                    statusSection.classList.remove('running');
+                    statusSection.classList.remove("running");
                 }
             }
         })
-        .catch(error => {
-            console.error('获取状态失败:', error);
+        .catch((error) => {
+            console.error("获取状态失败:", error);
         });
 }
 
-// 更新日志显示
 function updateLogs() {
-    fetch('/api/auto_solver/get_logs')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success' && data.log) {
-                const logContainer = document.getElementById('logContainer');
-                const logContent = document.querySelector('.log-content');
-                
+    fetch("/api/auto_solver/get_logs")
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success" && data.log) {
+                const logContainer = document.getElementById("logContainer");
+                const logContent = document.querySelector(".log-content");
+
                 if (!logContainer || !logContent) {
                     return;
                 }
-                
-                // 解析日志数据
+
                 let logs;
                 try {
                     logs = JSON.parse(data.log);
                 } catch (e) {
-                    // 如果解析失败，按原来的纯文本方式处理
-                    logContent.innerHTML += data.log.split('\\n').join('<br>');
+                    logContent.innerHTML += data.log.split("\\n").join("<br>");
                     logContainer.scrollTop = logContainer.scrollHeight;
                     return;
                 }
-                
-                logs.forEach(logEntry => {
-                    const logElement = document.createElement('div');
+
+                logs.forEach((logEntry) => {
+                    const logElement = document.createElement("div");
                     logElement.textContent = logEntry.message;
-                    logElement.classList.add('log-entry', logEntry.type);
-                    
+                    logElement.classList.add("log-entry", logEntry.type);
+
                     switch (logEntry.type) {
-                        case 'success':
-                            logElement.style.color = '#28a745';
-                            logElement.style.fontWeight = 'bold';
+                        case "success":
+                            logElement.style.color = "#28a745";
+                            logElement.style.fontWeight = "bold";
                             break;
-                        case 'error':
-                            logElement.style.color = '#dc3545';
-                            logElement.style.fontWeight = 'bold';
+                        case "error":
+                            logElement.style.color = "#dc3545";
+                            logElement.style.fontWeight = "bold";
                             break;
-                        case 'warning':
-                            logElement.style.color = '#ffc107';
-                            logElement.style.fontWeight = 'bold';
+                        case "warning":
+                            logElement.style.color = "#ffc107";
+                            logElement.style.fontWeight = "bold";
                             break;
-                        case 'info':
-                            logElement.style.color = '#17a2b8';
-                            logElement.style.fontWeight = 'bold';
+                        case "info":
+                            logElement.style.color = "#17a2b8";
+                            logElement.style.fontWeight = "bold";
                             break;
-                        case 'debug':
-                            logElement.style.color = '#6c757d';
-                            logElement.style.fontWeight = 'bold';
+                        case "debug":
+                            logElement.style.color = "#6c757d";
+                            logElement.style.fontWeight = "bold";
                             break;
                         default:
-                            logElement.style.fontWeight = 'bold';
+                            logElement.style.fontWeight = "bold";
                     }
-                    
+
                     logContent.appendChild(logElement);
                 });
-                
+
                 logContainer.scrollTop = logContainer.scrollHeight;
             }
         })
-        .catch(error => {
-            console.error('获取日志失败:', error);
+        .catch((error) => {
+            console.error("获取日志失败:", error);
         });
 }
 
-// 登录按钮
 function createLoginButton() {
-    const container = document.getElementById('loginButtonContainer');
+    const container = document.getElementById("loginButtonContainer");
     if (!container) {
         return;
     }
-    
-    if (!document.getElementById('loginButton')) {
-        const button = document.createElement('button');
-        button.id = 'loginButton';
-        button.className = 'button success';
+
+    if (!document.getElementById("loginButton")) {
+        const button = document.createElement("button");
+        button.id = "loginButton";
+        button.className = "button success";
         button.onclick = confirmAiLogin;
         button.innerHTML = '<i class="bi bi-check-circle"></i> 已完成AI登录';
         container.appendChild(button);
     }
 }
 
-// 开始刷个题
 async function startProblemSolver() {
     if (isRunning) {
-        showModal('当前有任务正在运行', 'error');
+        showModal("当前有任务正在运行", "error");
         return;
     }
-    
+
     createLoginButton();
-    const pids = document.getElementById('problemIds').value.trim();
+    const pids = document.getElementById("problemIds").value.trim();
     if (!pids) {
-        showModal('请输入题目ID', 'error');
+        showModal("请输入题目ID", "error");
         return;
     }
 
     try {
-        const response = await fetch('/api/auto_solver/problem_code', {
-            method: 'POST',
+        const response = await fetch("/api/auto_solver/problem_code", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 pids: pids,
-                notes: document.getElementById('problemNotes').value
-            })
+                notes: document.getElementById("problemNotes").value,
+            }),
         });
 
         const result = await response.json();
-        if (result.status === 'success') {
-            showModal('已启动刷题任务，请在弹出的浏览器窗口中登录360BOT', 'success');
+        if (result.status === "success") {
+            showModal("已启动刷题任务，请在弹出的浏览器窗口中登录360BOT", "success");
             startStatusUpdate();
         } else {
-            showModal('启动失败：' + result.msg, 'error');
+            showModal("启动失败：" + result.msg, "error");
         }
     } catch (error) {
-        showModal('启动失败：' + error.message, 'error');
+        showModal("启动失败：" + error.message, "error");
     }
 }
 
-// 开始刷训练题
 async function startTrainingSolver() {
     if (isRunning) {
-        showModal('当前有任务正在运行', 'error');
+        showModal("当前有任务正在运行", "error");
         return;
     }
-    
+
     createLoginButton();
-    const tids = document.getElementById('trainingIds').value.trim();
+    const tids = document.getElementById("trainingIds").value.trim();
     if (!tids) {
-        showModal('请输入训练集ID', 'error');
+        showModal("请输入训练集ID", "error");
         return;
     }
 
     try {
-        const response = await fetch('/api/auto_solver/training_code', {
-            method: 'POST',
+        const response = await fetch("/api/auto_solver/training_code", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 tids: tids,
-                notes: document.getElementById('trainingNotes').value
-            })
+                notes: document.getElementById("trainingNotes").value,
+            }),
         });
 
         const result = await response.json();
-        if (result.status === 'success') {
-            showModal('已启动刷题任务，请在弹出的浏览器窗口中登录360BOT', 'success');
+        if (result.status === "success") {
+            showModal("已启动刷题任务，请在弹出的浏览器窗口中登录360BOT", "success");
             startStatusUpdate();
         } else {
-            showModal('启动失败：' + result.msg, 'error');
+            showModal("启动失败：" + result.msg, "error");
         }
     } catch (error) {
-        showModal('启动失败：' + error.message, 'error');
+        showModal("启动失败：" + error.message, "error");
     }
 }
 
-// 开始刷全部题
 async function startAllSolver() {
     if (isRunning) {
-        showModal('当前有任务正在运行', 'error');
+        showModal("当前有任务正在运行", "error");
         return;
     }
-    
+
     createLoginButton();
     try {
-        const response = await fetch('/api/auto_solver/all_code');
+        const response = await fetch("/api/auto_solver/all_code");
         const result = await response.json();
-        if (result.status === 'success') {
-            showModal('已启动刷题任务，请在弹出的浏览器窗口中登录360BOT', 'success');
+        if (result.status === "success") {
+            showModal("已启动刷题任务，请在弹出的浏览器窗口中登录360BOT", "success");
             startStatusUpdate();
         } else {
-            showModal('启动失败：' + result.msg, 'error');
+            showModal("启动失败：" + result.msg, "error");
         }
     } catch (error) {
-        showModal('启动失败：' + error.message, 'error');
+        showModal("启动失败：" + error.message, "error");
     }
 }
 
-// 停止刷题
 async function stopSolver() {
     try {
-        const response = await fetch('/api/auto_solver/stop');
+        const response = await fetch("/api/auto_solver/stop");
         const result = await response.json();
-        if (result.status === 'success') {
-            showModal('正在停止刷题任务...', 'success');
+        if (result.status === "success") {
+            showModal("正在停止刷题任务...", "success");
         } else {
-            showModal('停止失败：' + result.msg, 'error');
+            showModal("停止失败：" + result.msg, "error");
         }
     } catch (error) {
-        showModal('停止失败：' + error.message, 'error');
+        showModal("停止失败：" + error.message, "error");
     }
 }
 
-// 开始状态更新
 function startStatusUpdate() {
-    // 立即更新一次状态
     updateStatus();
     updateLogs();
 
-    // 设置定期更新
     if (!logUpdateInterval) {
         logUpdateInterval = setInterval(() => {
             updateStatus();
@@ -365,30 +353,28 @@ function startStatusUpdate() {
     }
 }
 
-// 确认AI登录
 async function confirmAiLogin() {
     try {
-        const response = await fetch('/api/auto_solver/login_360ai');
+        const response = await fetch("/api/auto_solver/login_360ai");
         const result = await response.json();
-        if (result.status === 'success') {
-            showModal('已确认AI登录成功！', 'success');
-            // 立即更新状态显示
+        if (result.status === "success") {
+            showModal("已确认AI登录成功！", "success");
+
             updateStatus();
-            // 移除登录按钮
-            const button = document.getElementById('loginButton');
+
+            const button = document.getElementById("loginButton");
             if (button) {
                 button.remove();
             }
         } else {
-            showModal('确认登录失败：' + result.msg, 'error');
+            showModal("确认登录失败：" + result.msg, "error");
         }
     } catch (error) {
-        showModal('确认登录失败：' + error.message, 'error');
+        showModal("确认登录失败：" + error.message, "error");
     }
 }
 
-// 页面加载时初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
     checkConfig();
     startStatusUpdate();
 });
