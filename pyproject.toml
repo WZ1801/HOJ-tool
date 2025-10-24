@@ -5,10 +5,10 @@ description = "An automated tool for HOJ-like Online Judge systems with AI-power
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "EchoSearch", email = "1447998829@qq.com" }
+    { name = "Jonsin", email = "1447998829@qq.com" }
 ]
 maintainers = [
-    { name = "EchoSearch", email = "1447998829@qq.com" }
+    { name = "Jonsin", email = "1447998829@qq.com" }
 ]
 requires-python = ">=3.10, <=3.12.10"
 dependencies = [
