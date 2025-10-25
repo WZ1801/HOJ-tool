@@ -121,8 +121,14 @@ def get_driver():
             
         options = Options()
         options.add_experimental_option('useAutomationExtension', False)
-        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
         options.add_argument('--disable-infobars')
+        options.add_argument('--log-level=3')
+        options.add_argument('--disable-logging')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
         
     except Exception as e:
         print(f"{Fore.RED}配置文件有误，请重新配置并检查:{e}{Style.RESET_ALL}")
@@ -495,7 +501,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
         # send_log('warning', f'回调提交失败: {e}')
         return
 
-def all_code(is_web_call=False) -> None:
+def all_code(is_web_call=False, web_call_mode=1) -> None:
     global is_init
     if not is_init:
         initt()
@@ -536,19 +542,22 @@ def all_code(is_web_call=False) -> None:
     i = 1
     while True:
         pids = []
-        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-problem-list?oj=Mine&currentPage={i}&limit=999", headers=headers).json()
+        response = requests.get(f"{user_data['OJ']['APIURL']}/api/get-problem-list?oj=Mine&currentPage={i}&limit=100", headers=headers).json()
         res2 = requests.post(url=f"{user_data['OJ']['APIURL']}/api/get-user-problem-status", json={"pidList": [record["pid"] for record in response["data"]["records"]],"isContestProblemList": False,"containsEnd": False}, headers=headers).json()
 
+        if len(response['data']['records']) == 0:
+            break
+        
         for j in response['data']['records']:
             if str(res2['data'][str(j['pid'])]['status']) != '0':
                 pids.append(j['problemId'])
+        i += 1
         if len(pids) == 0:
-            break
+            continue
         pids_str = ','.join(map(str, pids))
         problem_code(driver=driver, pids=pids_str, notes='', jsessionid_cookie=jsessionid_cookie, is_call=True, is_web_call=is_web_call, web_call_mode=(2 if is_web_call else 1))
-        i += 1
         
-    if is_web_call:
+    if is_web_call and web_call_mode == 2 and driver is not None:
         try:
             requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
         except:
@@ -659,6 +668,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                 except: exit()
     if is_web_call and driver is not None:
         log_mode = 2
+        
     if is_web_call:
         if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
             requests.get("http://127.0.0.1:1146/api/auto_solver/stopp")
