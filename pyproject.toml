@@ -19,9 +19,7 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "fastapi>=0.116.1",
     "uvicorn>=0.35.0",
-    "pywebview>=6.0",
-    "jsmin>=3.0.1",
-    "rjsmin>=1.2.2"
+    "pywebview>=6.0"
 ]
 
 [project.urls]

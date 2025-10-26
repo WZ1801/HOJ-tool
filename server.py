@@ -76,7 +76,6 @@ def start_server(port=None) -> None:
         port=port,
         log_level="error",
         access_log=False,
-        http="httptools",
         loop="asyncio",
     )
 
