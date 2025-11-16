@@ -9,7 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 import os
 import sys
 from pathlib import Path
-from tools.port_utils import get_default_port, get_available_port
+from lib.port_utils import get_port
 
 # 添加项目根目录到Python路径
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -67,7 +67,7 @@ def start_server(port=None) -> None:
         port: 指定端口号，如果为None则使用随机可用端口
     """
     if port is None:
-        port = get_default_port()
+        port = get_port()
     
     
     uvicorn.run(

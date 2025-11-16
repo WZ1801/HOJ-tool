@@ -4,7 +4,7 @@ from os import path as pt
 from os import system
 from json import dump
 from sys import argv
-from tools.port_utils import get_default_port, get_available_port
+from lib.port_utils import get_port, get_available_port
 
 # 配置文件路径
 user_data_path = pt.join(pt.dirname(pt.normpath(sys.argv[0])), 'user_data.json')
@@ -115,7 +115,7 @@ def main():
         from threading import Thread
 
         # 获取可用端口
-        port = get_default_port()
+        port = get_port()
         print(f'{Fore.GREEN}服务器将使用端口: {port}{Style.RESET_ALL}')
 
         # 启动服务器线程，传递端口参数
