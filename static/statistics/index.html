@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交统计 - HOJ Tool</title>
+    <link rel="stylesheet" href="/statistics/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body></body>
+    <main class="container">
+        <div class="charts-container">
+            <div class="chart-card">
+                <h2>用户提交量排行榜</h2>
+                <canvas id="userRankChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>评测结果分布</h2>
+                <canvas id="statusRankChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>提交时间段统计</h2>
+                <canvas id="submissionTimeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>提交语言占比</h2>
+                <canvas id="languageChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>热门题目排行</h2>
+                <canvas id="topProblemsChart"></canvas>
+            </div>
+        </div>
+        <div class="user-search-card">
+            <h2>查询特定用户</h2>
+            <div class="search-box">
+                <input type="text" id="usernameInput" placeholder="输入用户名...">
+                <button id="searchButton">查询</button>
+            </div>
+            <div id="userSpecificResult" class="user-specific-result">
+                <div id="userResultContainer" style="display: none;">
+                    <h3 id="userResultTitle"></h3>
+                    <p id="userResultSubmissionCount"></p>
+                    <div class="user-charts-container">
+                        <div class="chart-card">
+                            <h4>评测结果分布</h4>
+                            <canvas id="userStatusChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>提交时间段统计</h4>
+                            <canvas id="userSubmissionTimeChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>提交语言占比</h4>
+                            <canvas id="userLanguageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <p id="userNotFound" style="display: none;"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Copyright © 2024-2025 <a href="https://gitee.com/wzokee/hoj-tool" target="_blank">HOJ Tool</a>. 仅供学习研究使用</p>
+        </div>
+    </footer>
+
+    <script src="http://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/statistics/index.js"></script>
+</body>
+
+</html>

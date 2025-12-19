@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HOJ Tool</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/frame/style.css" />
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>HOJ Tool</h2>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-module="about" title="关于与帮助">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>关于与帮助</span>
+                </a>
+                <a href="#" class="nav-item" data-module="auto_solver" title="自动刷题">
+                    <i class="bi bi-robot"></i>
+                    <span>自动刷题</span>
+                </a>
+                <a href="#" class="nav-item" data-module="statistics" title="数据统计">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>数据统计</span>
+                </a>
+                <a href="#" class="nav-item" data-module="ban_account" title="账号封禁">
+                    <i class="bi bi-shield-x"></i>
+                    <span>账号封禁</span>
+                </a>
+                <a href="#" class="nav-item" data-module="settings" title="设置">
+                    <i class="bi bi-gear-fill"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>v5.0.0</p>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- 各模块的 iframe -->
+                <iframe id="frame-about" class="content-frame active" data-module="about" src="/about/index.html"></iframe>
+                <iframe id="frame-auto_solver" class="content-frame" data-module="auto_solver" src="/auto_solver/index.html"></iframe>
+                <iframe id="frame-statistics" class="content-frame" data-module="statistics" src="/statistics/index.html"></iframe>
+                <iframe id="frame-ban_account" class="content-frame" data-module="ban_account" src="/ban_account/index.html"></iframe>
+                <iframe id="frame-settings" class="content-frame" data-module="settings" src="/settings/index.html"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script src="/frame/index.js"></script>
+</body>
+
+</html>

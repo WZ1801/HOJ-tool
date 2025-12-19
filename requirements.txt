@@ -1,0 +1,7 @@
+colorama>=0.4.6
+fastapi>=0.116.1
+pyperclip>=1.9.0
+pywebview>=6.0
+requests>=2.32.4
+selenium>=4.34.2
+uvicorn>=0.35.0

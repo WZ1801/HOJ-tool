@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>封禁账号 - HOJ Tool</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/ban_account/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>封禁账号</h2>
+            <div class="card">
+                <h3>功能说明</h3>
+                <p>该功能通过重复尝试错误密码来触发目标账号的安全机制，从而实现临时封禁目标账号的效果，仅限同一IP30min。</p>
+                <p class="warning">注意：请谨慎使用此功能，仅在授权范围内使用，请勿用于造成学术不端、私仇，造成一切损失后果自负，与HOJ tool开发者不关</p>
+            </div>
+
+            <div class="card">
+                <h3>封禁选项</h3>
+                <div class="form-group">
+                    <label>
+                        <input type="radio" name="ban_type" value="assign" checked> 封禁指定账号
+                    </label>
+                    <label>
+                        <input type="radio" name="ban_type" value="all"> 封禁所有账号
+                    </label>
+                </div>
+
+                <div id="assign_section">
+                    <div class="form-group">
+                        <label for="username">账号名称（多个账号用逗号分隔）：</label>
+                        <input type="text" id="username" placeholder="例如: root,admin,user">
+                    </div>
+                </div>
+
+                <div id="all_section" style="display: none;">
+                    <div class="form-group">
+                        <label for="white_list">白名单（多个账号用逗号分隔）：</label>
+                        <input type="text" id="white_list" placeholder="例如: user,myaccount,test">
+                    </div>
+                </div>
+
+                <button id="start_ban" class="button primary">开始封禁</button>
+                <button id="stop_ban" class="button secondary" style="display: none;">停止封禁</button>
+            </div>
+
+            <div class="card">
+                <h3>操作日志</h3>
+                <div id="log_container" class="log-container">
+                    <div class="log-entry">等待开始...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Copyright © 2024-2025 <a href="https://gitee.com/wzokee/hoj-tool" target="_blank">HOJ Tool</a>. 仅供学习研究使用</p>
+        </div>
+    </footer>
+
+    <script src="/ban_account/index.js"></script>
+</body>
+
+</html>

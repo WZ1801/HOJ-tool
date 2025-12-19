@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>配置信息 - HOJ Tool</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/settings/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
+</head>
+
+<body>
+    <main class="container">
+        <form id="settingsForm" class="settings-form">
+            <div class="form-section">
+                <h2>OJ平台设置</h2>
+                <div class="form-group">
+                    <label for="ojUrl">OJ网址</label>
+                    <input type="url" id="ojUrl" name="ojUrl" required />
+                </div>
+                <div class="form-group">
+                    <label for="ojApiUrl">OJ API地址</label>
+                    <input type="url" id="ojApiUrl" name="ojApiUrl" required />
+                </div>
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required />
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>AI服务设置</h2>
+                <div class="form-group">
+                    <label for="aiUrl">AI对话地址</label>
+                    <input type="url" id="aiUrl" name="aiUrl" required />
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>浏览器设置</h2>
+                <div class="form-group">
+                    <label for="browserType">浏览器类型</label>
+                    <select id="browserType" name="browserType" required>
+                        <option value="edge">Microsoft Edge</option>
+                        <option value="chrome">Google Chrome</option>
+                        <option value="firefox">Mozilla Firefox</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="driverPath">驱动程序路径</label>
+                    <div class="file-input-group">
+                        <input type="text" id="driverPath" name="driverPath"
+                            placeholder="例如：C:\path\to\chromedriver.exe    请使用绝对路径！！！" required />
+                        <input type="file" id="driverFile" accept=".exe" style="display: none" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button primary">保存设置</button>
+            </div>
+        </form>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-icon">
+                <i class="bi" id="modalIcon"></i>
+            </div>
+            <div class="modal-content" id="modalContent"></div>
+            <div class="modal-actions">
+                <button class="modal-button primary" onclick="closeModal()">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p>
+                Copyright © 2025
+                <a href="https://gitee.com/wzokee/hoj-tool" target="_blank">HOJ Tool</a>. 仅供学习研究使用
+            </p>
+        </div>
+    </footer>
+        <script src="/settings/index.js"></script>
+</body>
+
+</html>

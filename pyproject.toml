@@ -1,0 +1,33 @@
+[project]
+name = "hoj-tool"
+version = "4.0.3"
+description = "An automated tool for HOJ-like Online Judge systems with AI-powered problem solving capabilities"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Hemean", email = "1447998829@qq.com" }
+]
+maintainers = [
+    { name = "Hemean", email = "1447998829@qq.com" }
+]
+requires-python = ">=3.10, <=3.12.10"
+dependencies = [
+    "selenium>=4.34.2",
+    "requests>=2.32.4",
+    "pyperclip>=1.9.0",
+    "colorama>=0.4.6",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+    "pywebview>=6.0"
+]
+
+[project.urls]
+"Homepage" = "https://gitee.com/wzokee/hoj-tool"
+"Bug Tracker" = "https://gitee.com/wzokee/hoj-tool/issues"
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel>=0.37.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [{include = "static"}]

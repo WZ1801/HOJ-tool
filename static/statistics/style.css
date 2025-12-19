@@ -1,0 +1,135 @@
+@import url('/css/style.css');
+
+* {
+    box-sizing: border-box;
+}
+
+.user-search-card {
+    background: rgba(20, 20, 30, 0.8);
+    padding: 28px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 183, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin-top: 30px;
+    transition: all 0.3s ease;
+}
+
+.user-search-card:hover {
+    border-color: rgba(0, 183, 255, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+}
+
+.user-search-card h2 {
+    color: #00d4ff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.search-box {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+#usernameInput {
+    padding: 12px 16px;
+    border: 1px solid rgba(0, 183, 255, 0.3);
+    border-radius: 6px;
+    width: 250px;
+    min-width: 200px;
+    transition: all 0.3s ease;
+    background: rgba(10, 10, 15, 0.5);
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+#usernameInput::placeholder {
+    color: #606060;
+}
+
+#usernameInput:focus {
+    border-color: rgba(0, 183, 255, 0.6);
+    box-shadow: 0 0 12px rgba(0, 183, 255, 0.2);
+    outline: none;
+}
+
+#searchButton {
+    padding: 11px 24px;
+    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+    color: white;
+    border: 1px solid rgba(0, 183, 255, 0.5);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 80px;
+    font-weight: 500;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.25);
+}
+
+#searchButton:hover {
+    background: linear-gradient(135deg, #0a6fb5 0%, #00d4ff 100%);
+    box-shadow: 0 8px 20px rgba(0, 183, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.user-specific-result {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(10, 10, 15, 0.5);
+    border-radius: 8px;
+    border-left: 4px solid rgba(0, 183, 255, 0.4);
+    border: 1px solid rgba(0, 183, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 0.95rem;
+    color: #a0a0a0;
+}
+
+.charts-container {
+    display: grid !important;
+    grid-auto-flow: row;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background: rgba(20, 20, 30, 0.8);
+    border: 1px solid rgba(0, 183, 255, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+    border-color: rgba(0, 183, 255, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+}
+
+.chart-card h2,
+.user-charts-container h4 {
+    color: #00d4ff;
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.1em;
+}
+
+.user-charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 480px) {
+    #usernameInput {
+        width: 100%;
+    }
+
+    #searchButton {
+        width: 100%;
+    }
+}

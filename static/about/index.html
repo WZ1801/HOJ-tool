@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>关于与帮助 - HOJ Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="/about/style.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d47a1 50%, #1a1a1a 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 183, 255, 0.15);
+            border-bottom: 1px solid rgba(0, 183, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(0, 183, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            font-size: 1.1em;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        .content-section {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 183, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .content-section:hover {
+            border-color: rgba(0, 183, 255, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+        }
+
+        .section-title {
+            color: #00d4ff;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 1.2em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: rgba(30, 30, 40, 0.6);
+            border: 1px solid rgba(0, 183, 255, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(40, 40, 50, 0.8);
+            border-color: rgba(0, 183, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feature-card h3 {
+            color: #00d4ff;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .feature-card p {
+            color: #b0b0b0;
+            margin: 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .feature-card .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #00b7ff;
+        }
+
+        .help-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-list li {
+            background: rgba(30, 30, 40, 0.6);
+            border-left: 3px solid #00b7ff;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .help-list li:hover {
+            background: rgba(40, 40, 50, 0.8);
+            border-left-color: #00d4ff;
+        }
+
+        .help-list li strong {
+            color: #00d4ff;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .help-list li p {
+            margin: 0;
+            color: #b0b0b0;
+            font-size: 0.9em;
+        }
+
+        .warning-box {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .warning-box .warning-title {
+            color: #ff9800;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 24px;
+            background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(0, 183, 255, 0.5);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 183, 255, 0.25);
+            margin: 5px;
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, #0a6fb5 0%, #00d4ff 100%);
+            box-shadow: 0 8px 20px rgba(0, 183, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: #0a0a0a;
+            color: #a0a0a0;
+            border-top: 1px solid rgba(0, 183, 255, 0.1);
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: #00b7ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #00d4ff;
+        }
+
+        .version-info {
+            background: rgba(0, 183, 255, 0.1);
+            border: 1px solid rgba(0, 183, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .version-info .version {
+            color: #00d4ff;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><i class="bi bi-info-circle-fill"></i> 关于与帮助</h1>
+            <p>What HOJ Tool?</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 关于软件 -->
+        <section class="content-section">
+            <h2 class="section-title">
+                <i class="bi bi-info-circle"></i>
+                关于 HOJ Tool
+            </h2>
+            <p>HOJ Tool 是一款专为 HOJ 在线评测系统设计的智能辅助工具，旨在帮助用户更高效地学习和使用 HOJ 平台。</p>
+            
+            <div class="version-info">
+                <div class="version">当前版本：v5.0.0</div>
+                <p>基于 Web 技术构建，提供友好的用户界面和强大的功能。</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon"><i class="bi bi-robot"></i></div>
+                    <h3>自动刷题</h3>
+                    <p>利用 AI 技术智能解答编程题目，提高学习效率</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon"><i class="bi bi-bar-chart-fill"></i></div>
+                    <h3>数据统计</h3>
+                    <p>详细的提交统计和排行榜信息，掌握平台状况，分清局势</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon"><i class="bi bi-shield-x"></i></div>
+                    <h3>账号管理</h3>
+                    <p>便捷的账号封禁功能，正义降临</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 使用帮助 -->
+        <section class="content-section">
+            <h2 class="section-title">
+                <i class="bi bi-question-circle"></i>
+                简要使用帮助
+            </h2>
+            <ul class="help-list">
+                <li>
+                    <strong>配置信息设置</strong>
+                    <p>在设置页面中配置您的 OJ 平台地址、API 地址、用户名密码，以及 AI 服务地址和浏览器驱动路径。</p>
+                </li>
+                <li>
+                    <strong>自动刷题功能</strong>
+                    <p>进入自动刷题页面，选择模式，系统将自动解答并提交答案。</p>
+                </li>
+                <li>
+                    <strong>数据统计查看</strong>
+                    <p>在统计页面查看所有提交记录、通过率、排行榜等详细数据。</p>
+                </li>
+                <li>
+                    <strong>账号封禁功能</strong>
+                    <p>使用账号封禁功能可以快速处理违规账号，维护平台秩序。</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- 注意事项 -->
+        <div class="warning-box">
+            <div class="warning-title">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                重要提醒
+            </div>
+            <p><strong>本软件仅供学习研究使用！</strong></p>
+            <p>请遵守相关平台与纳米AI的使用条款，如违反相关条款，后果自负，与开发者无关。</p>
+        </div>
+
+        <section class="content-section">
+            <h2 class="section-title">
+                <i class="bi bi-headset"></i>
+                鸣谢与支持
+            </h2>
+            <p>在此感谢<a href="https://gitee.com/himitzh0730/hoj" target="_blank">HOJ</a>项目的开源贡献者！</p>
+            <p>本项目前端 UI 由 AI 生成，再此感谢AI奴们(Kimi-K2-0905,Qwen3-Coder,DeepSeek V3.2,Gemini-2.5-Pro,Claude-Haiku-4.5)!</p>
+            <p>如果您在使用过程中遇到问题或有建议，欢迎通过以下方式联系我们：</p>
+            <div style="margin: 20px 0;">
+                <a href="https://gitee.com/wzokee/hoj-tool" target="_blank" class="button">
+                    <i class="bi bi-github"></i> Gitee 仓库
+                </a>
+            </div>
+            <p style="color: #b0b0b0; font-size: 0.9em;">
+                Open source project ! 欢迎提交 PR 和提出 Issue !
+            </p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>
+                Copyright © 2024-2025
+                <a href="https://gitee.com/wzokee/hoj-tool" target="_blank">HOJ Tool</a>. 仅供学习研究使用
+                仅供学习研究使用
+            </p>
+        </div>
+    </footer>
+
+    <script src="/about/index.js"></script>
+</body>
+
+</html>
