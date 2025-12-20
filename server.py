@@ -73,9 +73,9 @@ def start_server(port=None) -> None:
     uvicorn.run(
         app, 
         host="127.0.0.1", 
-        port=port,
-        log_level="error",
-        access_log=False,
+        port=port, 
+        log_level="error", 
+        access_log=False, 
         loop="asyncio",
     )
 
