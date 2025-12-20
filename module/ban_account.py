@@ -82,7 +82,7 @@ def process_with_threads(usernames, thread_count=5):
                 status_response = requests.get("http://127.0.0.1:1146/api/ban_account/status", timeout=2)
                 if status_response.json().get('stop_flag') == True:
                     stop_event.set()
-                    requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                    requests.get("http://127.0.0.1:1146/api/ban_account/stopped")
                     break
             except:
                 pass
@@ -155,7 +155,7 @@ def ban_account(mode: str, arg=None) -> None:
             try:
                 status_response = requests.get("http://127.0.0.1:1146/api/ban_account/status", timeout=2)
                 if status_response.json().get('stop_flag') == True:
-                    requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+                    requests.get("http://127.0.0.1:1146/api/ban_account/stopped")
                     return
             except:
                 pass
@@ -167,8 +167,8 @@ def ban_account(mode: str, arg=None) -> None:
         # 使用线程池处理封禁
         if usernames_to_ban:
             send_log('info', f"开始使用5线程封禁 {len(usernames_to_ban)} 个用户...")
-            stopped = process_with_threads(usernames_to_ban, 5)
-            if stopped:
+            stoppeded = process_with_threads(usernames_to_ban, 5)
+            if stoppeded:
                 send_log('warning', "封禁过程被用户停止")
             else:
                 send_log('success', f"已完成封禁 {len(usernames_to_ban)} 个用户")
@@ -185,10 +185,10 @@ def ban_account(mode: str, arg=None) -> None:
         
         # 使用线程池处理封禁
         if username:
-            stopped = process_with_threads(username, 5)
-            if stopped:
+            stoppeded = process_with_threads(username, 5)
+            if stoppeded:
                 send_log('warning', "封禁过程被用户停止")
             else:
                 send_log('success', f"已完成封禁 {len(username)} 个指定用户")
     # 发送停止信号
-    requests.get("http://127.0.0.1:1146/api/ban_account/stopp")
+    requests.get("http://127.0.0.1:1146/api/ban_account/stopped")

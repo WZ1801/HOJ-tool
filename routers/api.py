@@ -129,7 +129,7 @@ async def all_code_() -> JSONResponse:
     )
     try:
         import module.auto_solver, threading
-        act = threading.Thread(target=module.auto_solver.all_code, args=(True,))
+        act = threading.Thread(target=module.auto_solver.all_code)
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -152,8 +152,8 @@ async def training_code_(request: Request) -> JSONResponse:
     )
     try:
         import module.auto_solver, threading
-        resjson = await request.json()
-        act = threading.Thread(target=module.auto_solver.training_code, args=(None, resjson['tids'], None, resjson['notes'], True, True, 2))
+        response = await request.json()
+        act = threading.Thread(target=module.auto_solver.training_code, args=(None, response['tids'], None, response['notes'], True))
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -176,8 +176,8 @@ async def problem_code_(request: Request) -> JSONResponse:
     )
     try:
         import module.auto_solver, threading
-        resjson = await request.json()
-        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, resjson['pids'], resjson['notes'], None, True, True, 2))
+        response = await request.json()
+        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, response['pid'], response['notes'], None, True))
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -234,8 +234,8 @@ async def stop_auto_solver() -> JSONResponse:
         content={"status": "success"}
     )
 
-@router.get("/auto_solver/stopp", summary="is_running倒")
-async def auto_solver_stopp() -> JSONResponse:
+@router.get("/auto_solver/stopped", summary="is_running倒")
+async def auto_solver_stopped() -> JSONResponse:
     try:
         auto_solver_status["is_running"] = False
     except Exception as e:
@@ -253,19 +253,19 @@ async def ban_account_(request: Request) -> JSONResponse:
     try:
         global ban_account_status
         ban_account_status["is_banning"] = True
-        resjson = await request.json()
-        if 'mode' not in resjson:
+        response = await request.json()
+        if 'mode' not in response:
             return JSONResponse(
                 status_code=400,
                 content={"status": "error", "msg": "请求体缺少必要字段"}
             )
-        mode = resjson['mode']
-        if mode == 'assign' and 'username' not in resjson:
+        mode = response['mode']
+        if mode == 'assign' and 'username' not in response:
             return JSONResponse(
                 status_code=400,
                 content={"status": "error", "msg": "请求体缺少必要字段"}
             )
-        if mode == 'all' and 'white_list' not in resjson:
+        if mode == 'all' and 'white_list' not in response:
             return JSONResponse(
                 status_code=400,
                 content={"status": "error", "msg": "请求体缺少必要字段"}
@@ -273,10 +273,10 @@ async def ban_account_(request: Request) -> JSONResponse:
         from threading import Thread
         if mode == 'all':
             import module.ban_account
-            Thread(target=module.ban_account.ban_account, args=(str(mode), resjson['white_list'])).start()
+            Thread(target=module.ban_account.ban_account, args=(str(mode), response['white_list'])).start()
         elif mode == 'assign':
             import module.ban_account
-            Thread(target=module.ban_account.ban_account, args=(str(mode), resjson['username'])).start()
+            Thread(target=module.ban_account.ban_account, args=(str(mode), response['username'])).start()
         
         return JSONResponse(
             status_code=200,
@@ -317,8 +317,8 @@ async def stop_ban_account() -> JSONResponse:
             content={"status": "error", "msg": f"停止封禁账号失败: {str(e)}"}
         )
 
-@router.get("/ban_account/stopp", summary="已停止封禁账号")
-async def stopp_ban_account() -> JSONResponse:
+@router.get("/ban_account/stopped", summary="已停止封禁账号")
+async def stopped_ban_account() -> JSONResponse:
     try:
         global ban_account_status
         ban_account_status["is_banning"] = False
@@ -341,15 +341,15 @@ logs1 = deque(maxlen=10000)
 logs_lock1 = asyncio.Lock()
 
 @router.post("/ban_account/log", summary="记录日志")
-async def log1(request: Request) -> JSONResponse:
+async def log_ban_account(request: Request) -> JSONResponse:
     try:
-        resjson = await request.json()
+        response = await request.json()
         async with logs_lock1:
-            logs1.append(resjson)
+            logs1.append(response)
         import json
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "loglong": len(json.dumps(resjson))}
+            content={"status": "success", "long": len(json.dumps(response))}
         )
     except Exception as e:
         return JSONResponse(
@@ -358,7 +358,7 @@ async def log1(request: Request) -> JSONResponse:
         )
     
 @router.get("/ban_account/get_logs", summary="读取日志")
-async def get_log1() -> JSONResponse:
+async def get_ban_account_logs() -> JSONResponse:
     try:
         import json
         async with logs_lock1:
@@ -380,15 +380,15 @@ logs2 = deque(maxlen=10000)
 logs_lock2 = asyncio.Lock()
 
 @router.post("/auto_solver/log", summary="记录日志")
-async def log2(request: Request) -> JSONResponse:
+async def log_auto_solver(request: Request) -> JSONResponse:
     try:
-        resjson = await request.json()
+        response = await request.json()
         async with logs_lock2:
-            logs2.append(resjson)
+            logs2.append(response)
         import json
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "loglong": len(json.dumps(resjson))}
+            content={"status": "success", "long": len(json.dumps(response))}
         )
     except Exception as e:
         return JSONResponse(
@@ -397,7 +397,7 @@ async def log2(request: Request) -> JSONResponse:
         )
     
 @router.get("/auto_solver/get_logs", summary="读取日志")
-async def get_log1() -> JSONResponse:
+async def get_auto_solver_logs() -> JSONResponse:
     try:
         import json
         async with logs_lock2:

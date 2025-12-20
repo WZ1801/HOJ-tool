@@ -28,12 +28,21 @@ PAGES = {
 }
 
 # 统一的页面路由处理
-for route, (folder, file) in PAGES.items():
-    @router.get(route, response_class=HTMLResponse, summary=f"{folder}页面")
-    async def read_page(folder=folder, file=file):
+def create_page_handler(folder: str, file: str):
+    """创建页面处理函数"""
+    async def page_handler():
         """返回页面HTML文件"""
         index_path = os.path.join("static", folder, file)
         return read_html_file(index_path)
+    return page_handler
+
+for route, (folder, file) in PAGES.items():
+    func_name = f"read_{folder}_page"
+    handler = create_page_handler(folder, file)
+    handler.__name__ = func_name
+    handler.__doc__ = f"返回{folder}页面"
+    
+    router.get(route, response_class=HTMLResponse, summary=f"{folder}页面")(handler)
 
 @router.get("/favicon.ico")
 async def favicon():
@@ -42,4 +51,4 @@ async def favicon():
     if os.path.exists(favicon_path):
         return FileResponse(favicon_path, media_type="image/x-icon")
     else:
-        return HTMLResponse("<h1>404 Not Found</h1><p>Favicon not found</p>", status_code=404)
+        return HTMLResponse("", status_code=404)

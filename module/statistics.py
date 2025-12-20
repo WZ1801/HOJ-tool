@@ -185,6 +185,6 @@ def calculate_statistics(submissions, username=None):
 
 def get_statistics(username=None):
     submissions = get_all_submissions()
-    if "error" in submissions:
+    if isinstance(submissions, dict) and "error" in submissions:
         return submissions
     return calculate_statistics(submissions, username)

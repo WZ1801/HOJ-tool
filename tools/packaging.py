@@ -1,5 +1,5 @@
 import os, sys
-print("HOJtool打包程序")
+print("HOJ tool打包程序")
 os.system("pause")
 import minifier
 print("\n\n正在压缩静态文件...")
