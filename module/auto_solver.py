@@ -476,8 +476,7 @@ def all_code() -> None:
             driver=driver,
             pids=pids_str,
             notes='',
-            jsessionid_cookie=jsessionid_cookie,
-            is_call=True
+            jsessionid_cookie=jsessionid_cookie
         )
 
     if driver is not None:
@@ -488,25 +487,61 @@ def all_code() -> None:
         driver.quit()
         exit()
 
-def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', is_call: bool = False) -> None:
+def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '') -> None:
     _ensure_inited()
     _ensure_submit_thread()
 
     global user_data, submit_T
-    if not is_call:
-        tids = input('请输入训练编号,用逗号隔开:')
-        notes = input('备注:')
-
+    if driver is None:
         driver = get_driver()
         try:
             jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
         except Exception as e:
             send_log('error', f'登录获取Cookie时出错:{e}')
             return
-
-        print('请自行操作登录360bot')
         driver.get('https://bot.n.cn/')
-        system('pause')
+        while True:
+            sleep(0.5)
+            try:
+                response = requests.get("http://127.0.0.1:1146/api/auto_solver/status")
+                if response.status_code == 200 and response.json()['is_login_360ai'] == True:
+                    break
+            except Exception:
+                try:
+                    pass
+                except:
+                    exit()
+
+
+    tid_list = tids.split(',')
+    if tid_list[0] != '':
+        for tid in tid_list:
+            send_log('info', '开始训练', pid=tid)
+            try:
+                pids = get_training_problem_ids(tid, jsessionid_cookie)
+            except Exception:
+                send_log('error', '获取训练题目ID时出错')
+                continue
+
+            problem_code(
+                driver=driver,
+                pids=",".join(map(str, pids)),
+                notes=notes,
+                jsessionid_cookie=jsessionid_cookie
+            )
+
+    driver.quit()
+
+    try:
+        requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")
+    except:
+        pass
+
+def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None) -> None:
+    _ensure_inited()
+    _ensure_submit_thread()
+
+    global user_data, submit_list
 
     if driver is None:
         driver = get_driver()
@@ -528,75 +563,11 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
                 except:
                     exit()
 
-    tid_list = tids.split(',')
-    if tid_list[0] != '':
-        for tid in tid_list:
-            send_log('info', '开始训练', pid=tid)
-            try:
-                pids = get_training_problem_ids(tid, jsessionid_cookie)
-            except Exception:
-                send_log('error', '获取训练题目ID时出错')
-                continue
 
-            problem_code(
-                driver=driver,
-                pids=",".join(map(str, pids)),
-                notes=notes,
-                jsessionid_cookie=jsessionid_cookie,
-                is_call=True
-            )
-
-    if not is_call:
+    if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
         driver.quit()
-
-    try:
         requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")
-    except:
-        pass
-
-def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, is_call: bool = False) -> None:
-    _ensure_inited()
-    _ensure_submit_thread()
-
-    global user_data, submit_list
-
-    if not is_call:
-        pids = input("请输入题目编号，用逗号分隔：")
-        driver = get_driver()
-        try:
-            jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
-        except Exception as e:
-            send_log('error', f'登录获取Cookie时出错:{e}')
-            return
-        print('请自行操作登录360bot')
-        driver.get('https://bot.n.cn/')
-        system('pause')
-
-    if is_call and driver is None:
-        driver = get_driver()
-        try:
-            jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
-        except Exception as e:
-            send_log('error', f'登录获取Cookie时出错:{e}')
-            return
-        driver.get('https://bot.n.cn/')
-        while True:
-            sleep(0.5)
-            try:
-                response = requests.get("http://127.0.0.1:1146/api/auto_solver/status")
-                if response.status_code == 200 and response.json()['is_login_360ai'] == True:
-                    break
-            except Exception:
-                try:
-                    pass
-                except:
-                    exit()
-
-    if is_call:
-        if requests.get("http://127.0.0.1:1146/api/auto_solver/status").json()['stop_flag'] == True:
-            requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")
-            driver.quit()
-            exit()
+        exit()
 
     driver.get(user_data['AI_URL'])
     pid_list = pids.split(',')
@@ -689,8 +660,5 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
             code = pyperclip.paste()
             submit_list.append([code, jsessionid_cookie, pid, 'C++', True])
 
-    if not is_call:
-        driver.quit()
-
-    if is_call and driver is not None:
-        requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")
+    driver.quit()
+    requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")

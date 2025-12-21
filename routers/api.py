@@ -153,7 +153,7 @@ async def training_code_(request: Request) -> JSONResponse:
     try:
         import module.auto_solver, threading
         response = await request.json()
-        act = threading.Thread(target=module.auto_solver.training_code, args=(None, response['tids'], None, response['notes'], True))
+        act = threading.Thread(target=module.auto_solver.training_code, args=(None, response['tids'], None, response['notes']))
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -177,7 +177,7 @@ async def problem_code_(request: Request) -> JSONResponse:
     try:
         import module.auto_solver, threading
         response = await request.json()
-        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, response['pid'], response['notes'], None, True))
+        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, response['pids'], response['notes'], None))
         act.start()
     except Exception as e:
         return JSONResponse(
