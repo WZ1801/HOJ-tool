@@ -121,15 +121,17 @@ async def save_config(request: Request):
             content={"status": "error", "msg": f"保存用户数据时发生错误：{e}"}
         )
 
-@router.get("/auto_solver/all_code", summary="开始刷全部题")
-async def all_code_() -> JSONResponse:
+@router.post("/auto_solver/all_code", summary="开始刷全部题")
+async def all_code_(request: Request) -> JSONResponse:
     if auto_solver_status['is_running']: return JSONResponse(
         status_code=400,
         content={"status": "error", "msg": "当前有任务正在运行"}
     )
     try:
         import module.auto_solver, threading
-        act = threading.Thread(target=module.auto_solver.all_code)
+        response = await request.json()
+        threshold = response.get('threshold', 3)
+        act = threading.Thread(target=module.auto_solver.all_code, args=(threshold,))
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -153,7 +155,10 @@ async def training_code_(request: Request) -> JSONResponse:
     try:
         import module.auto_solver, threading
         response = await request.json()
-        act = threading.Thread(target=module.auto_solver.training_code, args=(None, response['tids'], None, response['notes']))
+        tids = response.get('tids', '')
+        notes = response.get('notes', '')
+        threshold = response.get('threshold', 3)
+        act = threading.Thread(target=module.auto_solver.training_code, args=(None, tids, None, notes, threshold))
         act.start()
     except Exception as e:
         return JSONResponse(
@@ -177,7 +182,10 @@ async def problem_code_(request: Request) -> JSONResponse:
     try:
         import module.auto_solver, threading
         response = await request.json()
-        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, response['pids'], response['notes'], None))
+        pids = response.get('pids', [])
+        notes = response.get('notes', '')
+        threshold = response.get('threshold', 3)
+        act = threading.Thread(target=module.auto_solver.problem_code, args=(None, pids, notes, threshold))
         act.start()
     except Exception as e:
         return JSONResponse(

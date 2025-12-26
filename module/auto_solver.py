@@ -255,6 +255,30 @@ def get_training_problem_ids(tid: int, jsessionid_cookie: str) -> list:
     except Exception as e:
         send_log('error', f'训练获取题目时出错:{e}')
         return []
+    
+def is_give_up_skip(pid: str, jsessionid_cookie: str, threshold: int) -> bool:
+    '''
+    检查是否跳过时出错
+    
+    :param pid: 题目ID
+    :param jsessionid_cookie: JSESSIONID Cookie值
+    :param threshold: 未AC次数跳过阈值
+    :return: 是否跳过
+    '''
+    global user_data
+    url = f'{user_data["OJ"]["APIURL"]}/api/get-submission-list?onlyMine=true&problemID={pid}&currentPage=1&limit=100&completeProblemID=true'
+    try:
+        response = requests.get(url, headers={'Cookie': f'JSESSIONID={jsessionid_cookie}'}).json()
+        total = 0
+        for i in response['data']['records']:
+            if i['status'] != 0:
+                total += 1
+            if total >= threshold:
+                return True
+        return False
+    except Exception as e:
+        print(f'检查是否跳过时出错:{e}')
+    return True
 
 def copy_code(driver: webdriver.Chrome) -> None:
     try:
@@ -421,7 +445,7 @@ def callback_submission(JSESSIONID: str, submitId: int, pid: str, timeout: int =
     except Exception:
         return
 
-def all_code() -> None:
+def all_code(threshold: int = 3) -> None:
     _ensure_inited()
     _ensure_submit_thread()
 
@@ -476,8 +500,10 @@ def all_code() -> None:
             driver=driver,
             pids=pids_str,
             notes='',
-            jsessionid_cookie=jsessionid_cookie
+            jsessionid_cookie=jsessionid_cookie,
+            threshold=threshold
         )
+        # print(pids_str)
 
     if driver is not None:
         try:
@@ -487,7 +513,7 @@ def all_code() -> None:
         driver.quit()
         exit()
 
-def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '') -> None:
+def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, notes: str = '', threshold: int = 3) -> None:
     _ensure_inited()
     _ensure_submit_thread()
 
@@ -527,7 +553,8 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
                 driver=driver,
                 pids=",".join(map(str, pids)),
                 notes=notes,
-                jsessionid_cookie=jsessionid_cookie
+                jsessionid_cookie=jsessionid_cookie,
+                threshold=threshold
             )
 
     driver.quit()
@@ -537,13 +564,15 @@ def training_code(driver=None, tids: str = None, jsessionid_cookie: str = None, 
     except:
         pass
 
-def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None) -> None:
+def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cookie: str = None, threshold: int = 3) -> None:
     _ensure_inited()
     _ensure_submit_thread()
 
-    global user_data, submit_list
-
-    if driver is None:
+    global user_data, submit_list    
+    
+    is_new_driver = driver is None
+    
+    if is_new_driver:
         driver = get_driver()
         try:
             jsessionid_cookie = login_and_get_cookie(driver, f"{user_data['OJ']['URL']}/home", user_data['OJ']['username'], user_data['OJ']['password'])
@@ -573,6 +602,10 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
     pid_list = pids.split(',')
     if pid_list[0] != '':
         for pid in pid_list:
+            if threshold != -1 and is_give_up_skip(pid, jsessionid_cookie, threshold):
+                send_log('info', f'跳过题目', pid=pid)
+                continue
+            # continue
             try:
                 problem = get_problem_saying(pid, notes)
             except Exception:
@@ -594,7 +627,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                 'problemID': pid,
                 'currentPage': 1,
                 'limit': 10000,
-                'completeProblemID': 'false'
+                'completeProblemID': 'true'
             }
 
             try:
@@ -642,7 +675,7 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
                 return
 
             sleep(0.5)
-            textarea = driver.find_element(By.XPATH, "//textarea[last()]")
+            textarea = driver.find_element(By.XPATH, "//div[@role='textbox']")
             textarea.click()
             for _ in [str(problem)[i:i+7] for i in range(0, len(str(problem)), 7)]:
                 textarea.send_keys(_)
@@ -660,5 +693,6 @@ def problem_code(driver=None, pids: str = None, notes: str = '', jsessionid_cook
             code = pyperclip.paste()
             submit_list.append([code, jsessionid_cookie, pid, 'C++', True])
 
-    driver.quit()
-    requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")
+    if is_new_driver:
+        driver.quit()
+        requests.get("http://127.0.0.1:1146/api/auto_solver/stopped")

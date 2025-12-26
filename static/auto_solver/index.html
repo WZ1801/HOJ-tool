@@ -7,7 +7,7 @@
     <title>自动刷题 - HOJ Tool</title>
     <link rel="stylesheet" href="/auto_solver/style.css">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -27,6 +27,14 @@
                         <label for="problemNotes">额外提示（可选）</label>
                         <div class="input-group">
                             <textarea id="problemNotes" placeholder="给AI的额外提示信息..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="thresholdSlider">跳过阈值（未AC次数达到阈值时跳过该题）</label>
+                        <div class="slider-container">
+                            <input type="range" id="thresholdSlider" min="1" max="10" value="3" class="slider">
+                            <span id="thresholdValue">3</span>
+                            <button type="button" id="neverSkipBtn" class="button small" onclick="toggleNeverSkip()">从不跳过</button>
                         </div>
                     </div>
                     <div class="control-buttons">
@@ -50,6 +58,14 @@
                             <textarea id="trainingNotes" placeholder="给AI的额外提示信息..."></textarea>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="thresholdSliderTraining">跳过阈值（未AC次数达到阈值时跳过该题）</label>
+                        <div class="slider-container">
+                            <input type="range" id="thresholdSliderTraining" min="1" max="10" value="3" class="slider">
+                            <span id="thresholdValueTraining">3</span>
+                            <button type="button" id="neverSkipBtnTraining" class="button small" onclick="toggleNeverSkipTraining()">从不跳过</button>
+                        </div>
+                    </div>
                     <div class="control-buttons">
                         <button class="button success" onclick="startTrainingSolver()">
                             <i class="bi bi-play-fill"></i> 开始刷题
@@ -64,6 +80,14 @@
                         <div class="warning">
                             <i class="bi bi-exclamation-triangle"></i>
                             <span>请确保有充足的时间，该操作可能需要较长时间完成，甚至几天几夜……</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="thresholdSliderAll">跳过阈值（未AC次数达到阈值时跳过该题）</label>
+                        <div class="slider-container">
+                            <input type="range" id="thresholdSliderAll" min="1" max="10" value="3" class="slider">
+                            <span id="thresholdValueAll">3</span>
+                            <button type="button" id="neverSkipBtnAll" class="button small" onclick="toggleNeverSkipAll()">从不跳过</button>
                         </div>
                     </div>
                     <div class="control-buttons">

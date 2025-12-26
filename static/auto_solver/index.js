@@ -1,6 +1,11 @@
 let isRunning = false;
 let isAiLoggedIn = false;
 let logUpdateInterval = null;
+let neverSkipMode = {
+    problem: false,
+    training: false,
+    all: false
+};
 
 function showModal(message, type = "success") {
     const modal = document.getElementById("modal");
@@ -245,6 +250,8 @@ async function startProblemSolver() {
         return;
     }
 
+    const threshold = getThreshold('problem');
+
     try {
         const response = await fetch("/api/auto_solver/problem_code", {
             method: "POST",
@@ -254,6 +261,7 @@ async function startProblemSolver() {
             body: JSON.stringify({
                 pids: pids,
                 notes: document.getElementById("problemNotes").value,
+                threshold: threshold,
             }),
         });
 
@@ -282,6 +290,8 @@ async function startTrainingSolver() {
         return;
     }
 
+    const threshold = getThreshold('training');
+
     try {
         const response = await fetch("/api/auto_solver/training_code", {
             method: "POST",
@@ -291,6 +301,7 @@ async function startTrainingSolver() {
             body: JSON.stringify({
                 tids: tids,
                 notes: document.getElementById("trainingNotes").value,
+                threshold: threshold,
             }),
         });
 
@@ -313,8 +324,18 @@ async function startAllSolver() {
     }
 
     createLoginButton();
+    const threshold = getThreshold('all');
+
     try {
-        const response = await fetch("/api/auto_solver/all_code");
+        const response = await fetch("/api/auto_solver/all_code", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                threshold: threshold,
+            }),
+        });
         const result = await response.json();
         if (result.status === "success") {
             showModal("已启动刷题任务，请在弹出的浏览器窗口中登录360BOT", "success");
@@ -374,7 +395,108 @@ async function confirmAiLogin() {
     }
 }
 
+// 滑块事件监听和从不跳过功能
 document.addEventListener("DOMContentLoaded", function () {
     checkConfig();
     startStatusUpdate();
+    
+    // 初始化滑块事件监听
+    setupSliders();
 });
+
+function setupSliders() {
+    // 刷个题滑块
+    const problemSlider = document.getElementById('thresholdSlider');
+    const problemValue = document.getElementById('thresholdValue');
+    if (problemSlider && problemValue) {
+        problemSlider.addEventListener('input', function() {
+            problemValue.textContent = this.value;
+            neverSkipMode.problem = false;
+            document.getElementById('neverSkipBtn').textContent = '从不跳过';
+            document.getElementById('neverSkipBtn').classList.remove('active');
+        });
+    }
+    
+    // 刷训练题滑块
+    const trainingSlider = document.getElementById('thresholdSliderTraining');
+    const trainingValue = document.getElementById('thresholdValueTraining');
+    if (trainingSlider && trainingValue) {
+        trainingSlider.addEventListener('input', function() {
+            trainingValue.textContent = this.value;
+            neverSkipMode.training = false;
+            document.getElementById('neverSkipBtnTraining').textContent = '从不跳过';
+            document.getElementById('neverSkipBtnTraining').classList.remove('active');
+        });
+    }
+    
+    // 刷全部题滑块
+    const allSlider = document.getElementById('thresholdSliderAll');
+    const allValue = document.getElementById('thresholdValueAll');
+    if (allSlider && allValue) {
+        allSlider.addEventListener('input', function() {
+            allValue.textContent = this.value;
+            neverSkipMode.all = false;
+            document.getElementById('neverSkipBtnAll').textContent = '从不跳过';
+            document.getElementById('neverSkipBtnAll').classList.remove('active');
+        });
+    }
+}
+
+function toggleNeverSkip() {
+    neverSkipMode.problem = !neverSkipMode.problem;
+    const btn = document.getElementById('neverSkipBtn');
+    if (neverSkipMode.problem) {
+        btn.textContent = '已启用从不跳过';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '从不跳过';
+        btn.classList.remove('active');
+    }
+}
+
+function toggleNeverSkipTraining() {
+    neverSkipMode.training = !neverSkipMode.training;
+    const btn = document.getElementById('neverSkipBtnTraining');
+    if (neverSkipMode.training) {
+        btn.textContent = '已启用从不跳过';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '从不跳过';
+        btn.classList.remove('active');
+    }
+}
+
+function toggleNeverSkipAll() {
+    neverSkipMode.all = !neverSkipMode.all;
+    const btn = document.getElementById('neverSkipBtnAll');
+    if (neverSkipMode.all) {
+        btn.textContent = '已启用从不跳过';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '从不跳过';
+        btn.classList.remove('active');
+    }
+}
+
+function getThreshold(type) {
+    if (neverSkipMode[type]) {
+        return -1; // -1 表示从不跳过
+    }
+    
+    let slider;
+    switch(type) {
+        case 'problem':
+            slider = document.getElementById('thresholdSlider');
+            break;
+        case 'training':
+            slider = document.getElementById('thresholdSliderTraining');
+            break;
+        case 'all':
+            slider = document.getElementById('thresholdSliderAll');
+            break;
+        default:
+            return 3; // 默认值
+    }
+    
+    return slider ? parseInt(slider.value) : 3;
+}

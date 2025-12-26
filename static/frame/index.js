@@ -161,7 +161,6 @@ class FrameworkManager {
 let frameManager;
 document.addEventListener('DOMContentLoaded', () => {
     frameManager = new FrameworkManager();
-    console.log('Framework initialized with multiple iframes');
 });
 
 // 暴露给全局的刷新函数（可在 iframe 中调用）
