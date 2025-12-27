@@ -1,6 +1,6 @@
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from colorama import Fore, Back, Style, init as colorama_init
+from colorama import Fore, Style, init as colorama_init
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from urllib.parse import quote
