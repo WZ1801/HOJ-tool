@@ -6,6 +6,8 @@ import threading
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # 缓存
 in_memory_cache = {
@@ -39,6 +41,18 @@ def get_oj_api_url():
     except FileNotFoundError:
         return None
 
+def create_session_with_retries():
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        allowed_methods=["GET"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=10, pool_maxsize=10)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
 def get_all_submissions():
     # 检查缓存
     cached_submissions = get_cache_info()
@@ -51,38 +65,59 @@ def get_all_submissions():
         return {"error": "OJ API URL not configured."}
 
     submissions = []
-    limit = 1000
+    limit = 500
+    session = create_session_with_retries()
 
     try:
-        response = requests.get(
-            f"{oj_api_url}/api/get-submission-list?onlyMine=false&currentPage=1&limit=1&completeProblemID=false"
+        response = session.get(
+            f"{oj_api_url}/api/get-submission-list?onlyMine=false&currentPage=1&limit={limit}&completeProblemID=false"
         )
         response.raise_for_status()
         data = response.json().get("data", {})
         total_count = data.get("total", 0)
+        first_page_records = data.get("records", [])
+        
         if total_count == 0:
             save_to_cache([])
             return []
         
+        submissions.extend(first_page_records)
         total_pages = math.ceil(total_count / limit)
+        
+        if total_pages <= 1:
+            save_to_cache(submissions)
+            return submissions
+            
     except requests.exceptions.RequestException as e:
         return {"error": f"Failed to fetch initial data: {e}"}
     except (ValueError, AttributeError):
         return {"error": "Failed to parse initial data."}
 
     def fetch_page(page):
+        """获取单页数据，带错误处理和重试"""
         url = f"{oj_api_url}/api/get-submission-list?onlyMine=false&currentPage={page}&limit={limit}&completeProblemID=false"
         try:
-            response = requests.get(url)
+            response = session.get(url, timeout=30)
             response.raise_for_status()
             return response.json().get("data", {}).get("records", [])
-        except (requests.exceptions.RequestException, ValueError):
+        except Exception as e:
+            print(f"获取第{page}页失败: {e}")
             return []
 
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_page = {executor.submit(fetch_page, page): page for page in range(1, total_pages + 1)}
+    max_workers = min(16, total_pages - 1)
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_page = {executor.submit(fetch_page, page): page for page in range(2, total_pages + 1)}
+        
+        results = [None] * (total_pages - 1)
+        
         for future in as_completed(future_to_page):
+            page = future_to_page[future]
             records = future.result()
+            if records:
+                results[page - 2] = records
+        
+        for records in results:
             if records:
                 submissions.extend(records)
     

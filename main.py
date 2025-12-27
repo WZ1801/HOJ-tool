@@ -1,5 +1,3 @@
-import sys
-from os import path as pt
 from lib.port_utils import get_port
 
 def main():
