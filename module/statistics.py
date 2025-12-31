@@ -4,6 +4,7 @@ from collections import Counter
 import time
 import threading
 import math
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from requests.adapters import HTTPAdapter
@@ -17,21 +18,80 @@ in_memory_cache = {
 CACHE_TTL = 600  # 10分钟
 cache_lock = threading.Lock()
 
+# 文件缓存路径
+CACHE_FILE_PATH = "temp/statistics.json"
+
+# 进度跟踪
+statistics_progress = {
+    "is_running": False,
+    "progress": 0,
+    "total_pages": 0,
+    "current_page": 0,
+    "error": None
+}
+progress_lock = threading.Lock()
+
 def get_cache_info():
+    """获取缓存数据，优先从内存缓存获取，如果没有则从文件缓存获取"""
     with cache_lock:
+        # 首先检查内存缓存
         if time.time() - in_memory_cache["timestamp"] < CACHE_TTL:
             return in_memory_cache["submissions"]
+        
+        # 内存缓存过期，检查文件缓存
+        if os.path.exists(CACHE_FILE_PATH):
+            try:
+                with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
+                    cache_data = json.load(f)
+                    
+                # 检查文件缓存是否过期
+                if time.time() - cache_data.get("timestamp", 0) < CACHE_TTL:
+                    # 文件缓存有效，加载到内存缓存
+                    submissions = cache_data.get("submissions", [])
+                    in_memory_cache["timestamp"] = cache_data.get("timestamp", 0)
+                    in_memory_cache["submissions"] = submissions
+                    return submissions
+            except (json.JSONDecodeError, KeyError, IOError) as e:
+                print(f"读取文件缓存失败: {e}")
+                return None
     return None
 
 def save_to_cache(submissions):
+    """保存数据到内存缓存和文件缓存"""
+    timestamp = time.time()
+    
     with cache_lock:
-        in_memory_cache["timestamp"] = time.time()
+        in_memory_cache["timestamp"] = timestamp
         in_memory_cache["submissions"] = submissions
+    
+    # 保存到文件缓存
+    try:
+        cache_dir = os.path.dirname(CACHE_FILE_PATH)
+        if cache_dir and not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
+            
+        cache_data = {
+            "timestamp": timestamp,
+            "submissions": submissions
+        }
+        
+        with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache_data, f, ensure_ascii=False, indent=2)
+    except IOError as e:
+        print(f"保存文件缓存失败: {e}")
 
 def clear_cache():
+    """清空内存缓存和文件缓存"""
     with cache_lock:
         in_memory_cache["timestamp"] = 0
         in_memory_cache["submissions"] = []
+    
+    # 删除文件缓存
+    try:
+        if os.path.exists(CACHE_FILE_PATH):
+            os.remove(CACHE_FILE_PATH)
+    except IOError as e:
+        print(f"删除文件缓存失败: {e}")
 
 def get_oj_api_url():
     try:
@@ -53,15 +113,28 @@ def create_session_with_retries():
     session.mount("https://", adapter)
     return session
 
-def get_all_submissions():
-    # 检查缓存
-    cached_submissions = get_cache_info()
-    if cached_submissions is not None:
-        return cached_submissions
+def get_all_submissions(force_refresh=False):
+    """获取所有提交数据，支持强制刷新"""
+    # 如果不强制刷新，检查缓存
+    if not force_refresh:
+        cached_submissions = get_cache_info()
+        if cached_submissions is not None:
+            return cached_submissions
 
-    # 如果缓存不存在或已过期，重新请求数据
+    # 清空进度状态
+    with progress_lock:
+        statistics_progress["is_running"] = True
+        statistics_progress["progress"] = 0
+        statistics_progress["total_pages"] = 0
+        statistics_progress["current_page"] = 0
+        statistics_progress["error"] = None
+
+    # 如果缓存不存在或已过期，或强制刷新，重新请求数据
     oj_api_url = get_oj_api_url()
     if not oj_api_url:
+        with progress_lock:
+            statistics_progress["is_running"] = False
+            statistics_progress["error"] = "OJ API URL not configured."
         return {"error": "OJ API URL not configured."}
 
     submissions = []
@@ -69,6 +142,11 @@ def get_all_submissions():
     session = create_session_with_retries()
 
     try:
+        # 更新进度：开始获取第一页
+        with progress_lock:
+            statistics_progress["progress"] = 5
+            statistics_progress["current_page"] = 1
+        
         response = session.get(
             f"{oj_api_url}/api/get-submission-list?onlyMine=false&currentPage=1&limit={limit}&completeProblemID=false"
         )
@@ -79,18 +157,34 @@ def get_all_submissions():
         
         if total_count == 0:
             save_to_cache([])
+            with progress_lock:
+                statistics_progress["is_running"] = False
+                statistics_progress["progress"] = 100
             return []
         
         submissions.extend(first_page_records)
         total_pages = math.ceil(total_count / limit)
         
+        with progress_lock:
+            statistics_progress["total_pages"] = total_pages
+            statistics_progress["progress"] = 10
+        
         if total_pages <= 1:
             save_to_cache(submissions)
+            with progress_lock:
+                statistics_progress["is_running"] = False
+                statistics_progress["progress"] = 100
             return submissions
             
     except requests.exceptions.RequestException as e:
+        with progress_lock:
+            statistics_progress["is_running"] = False
+            statistics_progress["error"] = f"Failed to fetch initial data: {e}"
         return {"error": f"Failed to fetch initial data: {e}"}
     except (ValueError, AttributeError):
+        with progress_lock:
+            statistics_progress["is_running"] = False
+            statistics_progress["error"] = "Failed to parse initial data."
         return {"error": "Failed to parse initial data."}
 
     def fetch_page(page):
@@ -99,6 +193,13 @@ def get_all_submissions():
         try:
             response = session.get(url, timeout=30)
             response.raise_for_status()
+            
+            # 更新进度
+            with progress_lock:
+                statistics_progress["current_page"] = page
+                progress_percentage = 10 + (page / total_pages) * 80
+                statistics_progress["progress"] = min(progress_percentage, 90)
+            
             return response.json().get("data", {}).get("records", [])
         except Exception as e:
             print(f"获取第{page}页失败: {e}")
@@ -123,6 +224,13 @@ def get_all_submissions():
     
     # 保存到缓存
     save_to_cache(submissions)
+    
+    # 更新完成进度
+    with progress_lock:
+        statistics_progress["is_running"] = False
+        statistics_progress["progress"] = 100
+        statistics_progress["current_page"] = total_pages
+    
     return submissions
 
 def calculate_statistics(submissions, username=None):

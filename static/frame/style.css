@@ -1,17 +1,17 @@
 .app-container {
     display: flex;
     height: 100vh;
-    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+    background: #f5f6f8;
 }
 
 /* 侧边栏样式 */
 .sidebar {
     width: 70px;
-    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
-    border-right: 1px solid rgba(0, 183, 255, 0.1);
+    background: #ffffff;
+    border-right: 1px solid #e9ecef;
     display: flex;
     flex-direction: column;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
     overflow-y: auto;
     transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
@@ -23,8 +23,8 @@
 
 .sidebar-header {
     padding: 24px 20px;
-    border-bottom: 1px solid rgba(0, 183, 255, 0.1);
-    background: linear-gradient(135deg, #0d47a1 0%, #1a1a1a 100%);
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,7 +38,7 @@
 .sidebar-header h2 {
     margin: 0;
     font-size: 1.4em;
-    color: #00b7ff;
+    color: #333;
     display: none;
     align-items: center;
     gap: 10px;
@@ -70,7 +70,7 @@
 
 .nav-item {
     padding: 12px 8px;
-    color: #a0a0a0;
+    color: #666;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -81,7 +81,7 @@
     border-left: 3px solid transparent;
     font-size: 15px;
     border-radius: 8px;
-    background: rgba(0, 183, 255, 0);
+    background: transparent;
 }
 
 .sidebar.expanded .nav-item {
@@ -106,29 +106,29 @@
 }
 
 .nav-item:hover {
-    background: rgba(0, 183, 255, 0.15);
-    color: #00b7ff;
+    background: #f0f2f5;
+    color: #333;
     padding-left: 8px;
 }
 
 .sidebar.expanded .nav-item:hover {
-    background: rgba(0, 183, 255, 0.1);
+    background: #f0f2f5;
     padding-left: 24px;
 }
 
 .nav-item.active {
-    background: rgba(0, 183, 255, 0.2);
-    color: #00b7ff;
+    background: #e9ecef;
+    color: #333;
     border-left-color: transparent;
     padding-left: 8px;
-    box-shadow: 0 0 8px rgba(0, 183, 255, 0.2);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar.expanded .nav-item.active {
-    background: rgba(0, 183, 255, 0.15);
-    border-left-color: #00b7ff;
+    background: #e9ecef;
+    border-left-color: #007bff;
     padding-left: 24px;
-    box-shadow: inset 0 0 8px rgba(0, 183, 255, 0.1);
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .nav-item.active::after {
@@ -138,7 +138,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(180deg, #00b7ff 0%, transparent 100%);
+    background: linear-gradient(180deg, #007bff 0%, transparent 100%);
     display: none;
 }
 
@@ -149,9 +149,9 @@
 /* 侧边栏底部 */
 .sidebar-footer {
     padding: 20px;
-    border-top: 1px solid rgba(0, 183, 255, 0.1);
+    border-top: 1px solid #e9ecef;
     text-align: center;
-    color: #606060;
+    color: #999;
     font-size: 12px;
     display: none;
 }
@@ -229,7 +229,7 @@
         width: 100%;
         height: auto;
         border-right: none;
-        border-bottom: 1px solid rgba(0, 183, 255, 0.1);
+        border-bottom: 1px solid #e9ecef;
         flex-direction: row;
         overflow-x: auto;
         overflow-y: hidden;
@@ -243,7 +243,7 @@
     .sidebar-header {
         padding: 16px 20px;
         border-bottom: none;
-        border-right: 1px solid rgba(0, 183, 255, 0.1);
+        border-right: 1px solid #e9ecef;
         white-space: nowrap;
     }
 
@@ -289,12 +289,12 @@
     .nav-item.active {
         padding-left: 16px;
         border-left: none;
-        border-bottom-color: #00b7ff;
+        border-bottom-color: #007bff;
     }
 
     .sidebar.expanded .nav-item.active {
         border-bottom-color: transparent;
-        border-left-color: #00b7ff;
+        border-left-color: #007bff;
     }
 
     .nav-item.active::after {
@@ -320,21 +320,21 @@
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: rgba(0, 183, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(0, 183, 255, 0.3);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 183, 255, 0.5);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 /* 深色模式适配（可选） */
 @media (prefers-color-scheme: dark) {
     .app-container {
-        background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+        background: #f5f6f8;
     }
 }

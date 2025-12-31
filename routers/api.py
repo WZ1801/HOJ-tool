@@ -8,7 +8,7 @@ from fastapi import Request
 from os import path as pt
 from json import load
 from sys import argv
-from module.statistics import get_statistics, clear_cache
+from module.statistics import get_statistics, clear_cache, get_all_submissions, statistics_progress, progress_lock, get_cache_info
 router = APIRouter()
 user_data_path = pt.join(pt.dirname(pt.normpath(argv[0])), 'user_data.json')
 
@@ -433,3 +433,108 @@ async def clear_statistics_cache():
     """清空统计信息缓存"""
     clear_cache()
     return {"status": "success", "msg": "缓存已清空"}
+
+@router.post("/statistics/refresh", summary="强制刷新统计信息")
+async def refresh_statistics():
+    """强制刷新统计信息，忽略缓存"""
+    try:
+        # 检查是否已有统计任务在运行
+        with progress_lock:
+            if statistics_progress["is_running"]:
+                return JSONResponse(
+                    status_code=400,
+                    content={"status": "error", "msg": "统计任务已在运行中"}
+                )
+            # 重置进度状态
+            statistics_progress.update({
+                "is_running": True,
+                "progress": 0,
+                "total_pages": 0,
+                "current_page": 0,
+                "error": None
+            })
+        
+        # 异步执行统计任务（后台线程）
+        import threading
+        def run_refresh():
+            try:
+                get_all_submissions(force_refresh=True)
+            except Exception as e:
+                with progress_lock:
+                    statistics_progress["error"] = str(e)
+                    statistics_progress["is_running"] = False
+            finally:
+                with progress_lock:
+                    statistics_progress["is_running"] = False
+        
+        thread = threading.Thread(target=run_refresh)
+        thread.daemon = True
+        thread.start()
+        
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "msg": "已启动统计刷新任务"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"启动刷新任务失败: {str(e)}"}
+        )
+
+@router.get("/statistics/progress", summary="获取统计任务进度")
+async def get_statistics_progress():
+    """获取当前统计任务的进度状态"""
+    try:
+        with progress_lock:
+            progress_copy = statistics_progress.copy()
+        return JSONResponse(
+            status_code=200,
+            content=progress_copy
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"获取进度失败: {str(e)}"}
+        )
+
+@router.get("/statistics/cache_status", summary="获取缓存状态")
+async def get_cache_status():
+    """获取统计缓存的状态（是否存在、是否过期）"""
+    try:
+        cached_data = get_cache_info()
+        if cached_data is None:
+            return JSONResponse(
+                status_code=200,
+                content={"has_cache": False, "is_expired": True}
+            )
+        
+        # 检查缓存是否过期（10分钟TTL）
+        import time
+        import os
+        from os import path as pt
+        from json import load
+        
+        cache_file = pt.join(pt.dirname(pt.normpath(__file__)), "..", "temp", "statistics.json")
+        if pt.exists(cache_file):
+            cache_time = pt.getmtime(cache_file)
+            current_time = time.time()
+            # 10分钟 = 600秒
+            is_expired = (current_time - cache_time) > 600
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "has_cache": True, 
+                    "is_expired": is_expired,
+                    "last_modified": cache_time * 1000  # 转换为毫秒，用于JavaScript Date对象
+                }
+            )
+        else:
+            return JSONResponse(
+                status_code=200,
+                content={"has_cache": False, "is_expired": True}
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "msg": f"获取缓存状态失败: {str(e)}"}
+        )

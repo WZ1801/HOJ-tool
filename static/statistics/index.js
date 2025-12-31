@@ -1,14 +1,259 @@
 document.addEventListener('DOMContentLoaded', function () {
+    let progressCheckInterval = null;
+    let isRefreshInProgress = false;
+    let hasShownCacheModal = false;
+    
     const userRankCtx = document.getElementById('userRankChart').getContext('2d');
     const statusRankCtx = document.getElementById('statusRankChart').getContext('2d');
     const submissionTimeCtx = document.getElementById('submissionTimeChart').getContext('2d');
     const topProblemsCtx = document.getElementById('topProblemsChart').getContext('2d');
     const userStatusCtx = document.getElementById('userStatusChart').getContext('2d');
     const userSubmissionTimeCtx = document.getElementById('userSubmissionTimeChart').getContext('2d');
-    let userRankChart, statusRankChart, submissionTimeChart, topProblemsChart, userStatusChart, userSubmissionTimeChart, userLanguageChart;
+    let userRankChart, statusRankChart, submissionTimeChart, topProblemsChart, userStatusChart, userSubmissionTimeChart, userLanguageChart, languageChart;
     let isLoading = false;
     let loadingTipInterval = null;
-
+    
+    function checkCacheStatus() {
+        fetch('/api/statistics/cache_status')
+            .then(response => response.json())
+            .then(data => {
+                updateCacheStatusUI(data);
+                
+                if (!hasShownCacheModal && (!data.has_cache || data.is_expired)) {
+                    hasShownCacheModal = true;
+                    setTimeout(() => {
+                        showRefreshConfirmModal();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('获取缓存状态失败:', error);
+                document.getElementById('cacheStatusText').textContent = '获取失败';
+                document.getElementById('cacheStatusText').style.color = '#dc3545';
+            });
+    }
+    
+    function updateCacheStatusUI(cacheStatus) {
+        const cacheStatusText = document.getElementById('cacheStatusText');
+        const lastUpdateTime = document.getElementById('lastUpdateTime');
+        
+        if (cacheStatus.has_cache) {
+            if (cacheStatus.is_expired) {
+                cacheStatusText.textContent = '已过期';
+                cacheStatusText.style.color = '#ffc107';
+            } else {
+                cacheStatusText.textContent = '有效';
+                cacheStatusText.style.color = '#28a745';
+            }
+        } else {
+            cacheStatusText.textContent = '无缓存';
+            cacheStatusText.style.color = '#dc3545';
+        }
+        
+        if (cacheStatus.has_cache && cacheStatus.last_modified) {
+            const date = new Date(cacheStatus.last_modified);
+            lastUpdateTime.textContent = date.toLocaleString('zh-CN');
+        } else {
+            lastUpdateTime.textContent = '从未更新';
+        }
+    }
+    
+    function showRefreshConfirmModal(message = null) {
+        const modal = document.getElementById('refreshConfirmModal');
+        const modalMessage = document.getElementById('modalMessage');
+        
+        if (message) {
+            modalMessage.textContent = message;
+        } else {
+            modalMessage.textContent = '缓存已过期或不存在，是否重新统计？';
+        }
+        
+        modal.style.display = 'flex';
+        
+        const closeBtn = document.querySelector('.close-modal-btn');
+        const cancelBtn = document.getElementById('cancelRefreshBtn');
+        const confirmBtn = document.getElementById('confirmRefreshBtn');
+        
+        const closeModal = () => {
+            modal.style.display = 'none';
+        };
+        
+        closeBtn.onclick = closeModal;
+        cancelBtn.onclick = closeModal;
+        
+        confirmBtn.onclick = () => {
+            closeModal();
+            refreshStatistics();
+        };
+        
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+    }
+    
+    function refreshStatistics() {
+        if (isRefreshInProgress) {
+            showErrorModal('统计任务已在运行中，请稍后再试');
+            return;
+        }
+        
+        isRefreshInProgress = true;
+        hasShownCacheModal = false;
+        document.getElementById('refreshStatisticsBtn').disabled = true;
+        document.getElementById('refreshStatisticsBtn').innerHTML = '<i class="bi bi-arrow-clockwise"></i> 刷新中...';
+        updateProgressStatus({ is_running: true, progress: 0, total_pages: 0, current_page: 0, error: null });
+        
+        if (progressCheckInterval) {
+            clearInterval(progressCheckInterval);
+        }
+        progressCheckInterval = setInterval(checkProgress, 1000);
+        
+        fetch('/api/statistics/refresh', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'error') {
+                showErrorModal(data.msg);
+                stopRefreshProgress();
+            }
+        })
+        .catch(error => {
+            showErrorModal(`启动刷新任务失败: ${error.message}`);
+            stopRefreshProgress();
+        });
+    }
+    
+    function checkProgress() {
+        if (!isRefreshInProgress) return;
+        
+        fetch('/api/statistics/progress')
+            .then(response => response.json())
+            .then(progress => {
+                updateProgressStatus(progress);
+                
+                if (!progress.is_running) {
+                    stopRefreshProgress();
+                    
+                    if (progress.error) {
+                        showErrorModal(`统计过程中出错: ${progress.error}`);
+                    } else if (progress.status === 'completed' || progress.progress === 100) {
+                        setTimeout(() => {
+                            fetchDataAndRenderCharts();
+                            checkCacheStatus();
+                            showErrorModal('统计刷新完成！');
+                        }, 1000);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('获取进度失败:', error);
+                const retryCount = window.retryCount || 0;
+                if (retryCount >= 3) {
+                    stopRefreshProgress();
+                    showErrorModal('获取进度失败，请手动检查刷新状态');
+                } else {
+                    window.retryCount = retryCount + 1;
+                }
+            });
+    }
+    
+    function updateProgressStatus(progress) {
+        const progressStatusText = document.getElementById('progressStatusText');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const progressDetails = document.getElementById('progressDetails');
+        
+        if (progress.is_running) {
+            progressStatusText.textContent = '进行中';
+            progressStatusText.style.color = '#007bff';
+            
+            let percent = 0;
+            if (progress.total_pages > 0) {
+                percent = Math.round((progress.current_page / progress.total_pages) * 100);
+            } else if (progress.progress > 0) {
+                percent = progress.progress;
+            }
+            
+            progressBarFill.style.width = `${percent}%`;
+            progressPercentage.textContent = `${percent}%`;
+            
+            if (progress.total_pages > 0) {
+                progressDetails.textContent = `正在处理第 ${progress.current_page} 页 / 共 ${progress.total_pages} 页`;
+            } else {
+                progressDetails.textContent = '正在获取数据...';
+            }
+        } else {
+            progressStatusText.textContent = '空闲';
+            progressStatusText.style.color = '#6c757d';
+            progressBarFill.style.width = '0%';
+            progressPercentage.textContent = '0%';
+            progressDetails.textContent = '等待开始...';
+        }
+    }
+    
+    function stopRefreshProgress() {
+        isRefreshInProgress = false;
+        window.retryCount = 0;
+        
+        if (progressCheckInterval) {
+            clearInterval(progressCheckInterval);
+            progressCheckInterval = null;
+        }
+        
+        const refreshBtn = document.getElementById('refreshStatisticsBtn');
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> 刷新统计';
+        }
+        
+        updateProgressStatus({ is_running: false, progress: 0, total_pages: 0, current_page: 0, error: null });
+    }
+    
+    function clearCache() {
+        if (isRefreshInProgress) {
+            showErrorModal('统计任务正在运行中，无法清空缓存');
+            return;
+        }
+        
+        if (!confirm('确定要清空统计缓存吗？清空后需要重新统计才能查看数据。')) {
+            return;
+        }
+        
+        fetch('/api/statistics/clear_cache', {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('cacheStatusText').textContent = '已清空';
+                document.getElementById('cacheStatusText').style.color = '#dc3545';
+                document.getElementById('lastUpdateTime').textContent = '从未更新';
+                showErrorModal('缓存已成功清空');
+            } else {
+                showErrorModal(`清空缓存失败: ${data.msg}`);
+            }
+        })
+        .catch(error => {
+            showErrorModal(`清空缓存失败: ${error.message}`);
+        });
+    }
+    
+    function initEventListeners() {
+        document.getElementById('refreshStatisticsBtn').addEventListener('click', refreshStatistics);
+        document.getElementById('clearCacheBtn').addEventListener('click', clearCache);
+        
+        document.getElementById('refreshConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    }
+    
+    initEventListeners();
+    checkCacheStatus();
 
     const loadingTips = [
         '加载数据中，约一分钟，请耐心等待……',
@@ -21,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
         'give me a starrrrrr!!!!!!!',
         'FIX A BUG TO MAKE A BUG!'
     ];
-
 
     function showLoading(show) {
         const container = document.querySelector('.container');
@@ -46,20 +290,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     backdrop-filter: blur(2px);
                 `;
 
-
-                const spinner = document.createElement('div');
-                spinner.style.cssText = `
-                    border: 8px solid #f3f3f3;
-                    border-top: 8px solid #3498db;
-                    border-radius: 50%;
-                    width: 60px;
-                    height: 60px;
-                    animation: spin 1s linear infinite;
-                    margin-bottom: 16px;
-                `;
-
-
                 const style = document.createElement('style');
+                style.id = 'loading-style-spin';
                 style.textContent = `
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
@@ -67,18 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 `;
 
-
-                const tipText = document.createElement('div');
-                tipText.id = 'loading-tip';
-                tipText.style.cssText = `
-                    margin-top: 16px;
-                    font-size: 16px;
-                    color: #333;
-                    animation: fadeInOut 3s ease-in-out infinite;
-                `;
-
-
                 const animationStyle = document.createElement('style');
+                animationStyle.id = 'loading-style-fade';
                 animationStyle.textContent = `
                     @keyframes fadeInOut {
                         0% { opacity: 0; transform: translateY(10px); }
@@ -87,16 +309,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         100% { opacity: 0; transform: translateY(-10px); }
                     }
                 `;
-
-
-                const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
-                tipText.textContent = randomTip;
-
-
-                loadingTipInterval = setInterval(() => {
-                    const currentTip = loadingTips[Math.floor(Math.random() * loadingTips.length)];
-                    tipText.textContent = currentTip;
-                }, 3000);
 
                 loadingDiv.appendChild(spinner);
                 loadingDiv.appendChild(tipText);
@@ -107,11 +319,14 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             if (loadingDiv) {
                 document.body.removeChild(loadingDiv);
-                const style = document.querySelector('style[type="text/css"]');
+                const style = document.getElementById('loading-style-spin');
                 if (style) {
                     document.head.removeChild(style);
                 }
-
+                const animationStyle = document.getElementById('loading-style-fade');
+                if (animationStyle) {
+                    document.head.removeChild(animationStyle);
+                }
                 if (loadingTipInterval) {
                     clearInterval(loadingTipInterval);
                     loadingTipInterval = null;
@@ -120,9 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
     function showErrorModal(message) {
-
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'modal-overlay show';
         modalOverlay.style.cssText = `
@@ -189,13 +402,11 @@ document.addEventListener('DOMContentLoaded', function () {
         modalOverlay.appendChild(modal);
         document.body.appendChild(modalOverlay);
 
-
         modalOverlay.onclick = (e) => {
             if (e.target === modalOverlay) {
                 document.body.removeChild(modalOverlay);
             }
         };
-
 
         const escHandler = (e) => {
             if (e.key === 'Escape') {
@@ -481,7 +692,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderLanguageChart(languageDistribution) {
-
         if (languageChart && typeof languageChart.destroy === 'function') {
             languageChart.destroy();
         }
@@ -581,8 +791,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
     document.getElementById('searchButton').addEventListener('click', function () {
+        if (isRefreshInProgress) {
+            showErrorModal('统计刷新正在进行中，请稍后再搜索');
+            return;
+        }
+        
         const username = document.getElementById('usernameInput').value;
         if (!username) {
             showErrorModal('请输入用户名');

@@ -10,39 +10,39 @@
 }
 
 .content {
-    background: rgba(20, 20, 30, 0.8);
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 .content h2 {
-    color: #00d4ff;
+    color: #333;
     margin-top: 0;
-    border-bottom: 2px solid rgba(0, 183, 255, 0.3);
+    border-bottom: 2px solid #e9ecef;
     padding-bottom: 15px;
     font-size: 1.3em;
 }
 
 .card {
-    background: rgba(10, 10, 15, 0.5);
-    border: 1px solid rgba(0, 183, 255, 0.15);
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
 .card:hover {
-    border-color: rgba(0, 183, 255, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.15);
+    border-color: #d6d9de;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .card h3 {
     margin-top: 0;
-    color: #00d4ff;
+    color: #333;
     font-size: 1.1em;
 }
 
@@ -63,74 +63,74 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #a0a0a0;
+    color: #666;
     font-size: 0.95em;
 }
 
 .form-group input[type="text"] {
     width: 100%;
     padding: 12px;
-    border: 1px solid rgba(0, 183, 255, 0.3);
+    border: 1px solid #ced4da;
     border-radius: 6px;
     font-size: 15px;
-    background: rgba(10, 10, 15, 0.5);
-    color: #e0e0e0;
+    background: #f8f9fa;
+    color: #333;
     transition: all 0.3s ease;
 }
 
 .form-group input[type="text"]:focus {
     outline: none;
-    border-color: rgba(0, 183, 255, 0.6);
-    box-shadow: 0 0 12px rgba(0, 183, 255, 0.2);
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.15);
 }
 
 .form-group input[type="radio"] {
     margin-right: 8px;
-    accent-color: #00b7ff;
+    accent-color: #007bff;
 }
 
 .button {
     display: inline-block;
     padding: 11px 24px;
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+    background: #007bff;
     color: white;
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid rgba(0, 183, 255, 0.5);
+    border: 1px solid transparent;
     cursor: pointer;
     font-weight: 500;
     font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
 }
 
 .button:hover {
-    background: linear-gradient(135deg, #0a6fb5 0%, #00d4ff 100%);
-    box-shadow: 0 8px 20px rgba(0, 183, 255, 0.4);
+    background: #0056b3;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25);
     transform: translateY(-2px);
 }
 
 .button.primary {
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
-    border-color: rgba(0, 183, 255, 0.5);
+    background: #007bff;
+    border-color: transparent;
 }
 
 .button.secondary {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    border-color: rgba(231, 76, 60, 0.5);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25);
+    background: #dc3545;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
 }
 
 .button.secondary:hover {
-    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
 }
 
 .log-container {
     height: 300px;
     overflow-y: auto;
-    background: rgba(10, 10, 15, 0.6);
+    background: #f8f9fa;
     border-radius: 8px;
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    border: 1px solid #e9ecef;
     padding: 15px;
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 13px;
@@ -141,21 +141,21 @@
 }
 
 .log-container::-webkit-scrollbar-track {
-    background: rgba(0, 183, 255, 0.05);
+    background: #f8f9fa;
 }
 
 .log-container::-webkit-scrollbar-thumb {
-    background: rgba(0, 183, 255, 0.3);
+    background: #d6d9de;
     border-radius: 4px;
 }
 
 .log-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 183, 255, 0.5);
+    background: #ced4da;
 }
 
 .log-entry {
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-    color: #a0a0a0;
+    color: #666;
     margin-bottom: 4px;
     word-break: break-all;
     line-height: 1.5;
@@ -177,5 +177,5 @@
 }
 
 .log-entry.info {
-    color: #00b7ff;
+    color: #007bff;
 }

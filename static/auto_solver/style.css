@@ -21,20 +21,20 @@
 .solve-section {
     margin-bottom: 20px;
     padding: 28px;
-    background: rgba(20, 20, 30, 0.8);
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
 .solve-section:hover {
-    border-color: rgba(0, 183, 255, 0.4);
-    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+    border-color: #d6d9de;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .solve-section h2 {
-    color: #00d4ff;
+    color: #333;
     margin: 0 0 20px 0;
     display: flex;
     align-items: center;
@@ -44,11 +44,11 @@
 }
 
 .solve-section h2 i {
-    color: #00b7ff;
+    color: #007bff;
 }
 
 .description {
-    color: #a0a0a0;
+    color: #666;
     margin-bottom: 20px;
     line-height: 1.6;
 }
@@ -76,7 +76,7 @@
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #a0a0a0;
+    color: #666;
     font-weight: 600;
     font-size: 0.95em;
     letter-spacing: 0.3px;
@@ -90,29 +90,29 @@
 .input-group textarea {
     flex: 1;
     padding: 12px;
-    border: 1px solid rgba(0, 183, 255, 0.3);
+    border: 1px solid #e9ecef;
     border-radius: 6px;
     font-size: 14px;
     min-height: 38px;
     resize: vertical;
-    background: rgba(10, 10, 15, 0.5);
-    color: #e0e0e0;
+    background: #f8f9fa;
+    color: #333;
     font-family: 'Menlo', 'Monaco', monospace;
     transition: all 0.3s ease;
 }
 
 .input-group textarea:focus {
     outline: none;
-    border-color: rgba(0, 183, 255, 0.6);
-    box-shadow: 0 0 12px rgba(0, 183, 255, 0.2);
-    background: rgba(10, 10, 15, 0.8);
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.15);
+    background: #ffffff;
 }
 
 .input-group .button {
     padding: 8px 14px;
     height: 38px;
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
-    border: 1px solid rgba(0, 183, 255, 0.5);
+    background: #007bff;
+    border: 1px solid transparent;
     color: white;
     border-radius: 6px;
     cursor: pointer;
@@ -120,7 +120,7 @@
 }
 
 .input-group .button:hover {
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
 }
 
 .input-group .button i {
@@ -128,26 +128,26 @@
 }
 
 .status-section {
-    background: rgba(20, 20, 30, 0.8);
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     padding: 28px;
     transition: all 0.3s ease;
 }
 
 .status-section:hover {
-    border-color: rgba(0, 183, 255, 0.4);
-    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+    border-color: #d6d9de;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .status-section.running {
-    background: rgba(20, 40, 30, 0.8);
-    border-color: rgba(46, 204, 113, 0.3);
+    background: #f0fff4;
+    border-color: #2ecc71;
 }
 
 .status-section.running:hover {
-    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.15);
+    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.1);
 }
 
 .status-info {
@@ -179,19 +179,19 @@
 }
 
 .status-label {
-    color: #a0a0a0;
+    color: #666;
     font-weight: 600;
     font-size: 0.9em;
 }
 
 .status-value {
-    color: #00d4ff;
+    color: #007bff;
     font-weight: 600;
     font-size: 1.1em;
 }
 
 .status-section h2 {
-    color: #00d4ff;
+    color: #333;
     margin: 0 0 20px 0;
     display: flex;
     align-items: center;
@@ -201,14 +201,14 @@
 }
 
 .status-section h2 i {
-    color: #00b7ff;
+    color: #007bff;
 }
 
 .log-container {
-    background: rgba(10, 10, 15, 0.6);
+    background: #f8f9fa;
     border-radius: 8px;
     margin: 20px 0;
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    border: 1px solid #e9ecef;
     overflow: hidden;
 }
 
@@ -217,13 +217,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 15px;
-    background: rgba(0, 183, 255, 0.1);
-    border-bottom: 1px solid rgba(0, 183, 255, 0.2);
+    background: #e9ecef;
+    border-bottom: 1px solid #d6d9de;
 }
 
 .log-header span {
     font-weight: 600;
-    color: #00d4ff;
+    color: #333;
     font-size: 0.95em;
 }
 
@@ -233,7 +233,7 @@
     padding: 15px;
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     white-space: pre-wrap;
-    color: #a0a0a0;
+    color: #666;
     font-size: 13px;
     line-height: 1.6;
 }
@@ -243,16 +243,16 @@
 }
 
 .log-content::-webkit-scrollbar-track {
-    background: rgba(0, 183, 255, 0.05);
+    background: #f8f9fa;
 }
 
 .log-content::-webkit-scrollbar-thumb {
-    background: rgba(0, 183, 255, 0.3);
+    background: #d6d9de;
     border-radius: 4px;
 }
 
 .log-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 183, 255, 0.5);
+    background: #ced4da;
 }
 
 .log-entry {
@@ -273,7 +273,7 @@
 }
 
 .log-entry.info {
-    color: #00b7ff;
+    color: #007bff;
 }
 
 .log-entry.debug {
@@ -289,42 +289,42 @@
 .button {
     display: inline-block;
     padding: 11px 24px;
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+    background: #007bff;
     color: white;
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid rgba(0, 183, 255, 0.5);
+    border: 1px solid transparent;
     cursor: pointer;
     font-weight: 500;
     font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
 }
 
 .button:hover {
-    background: linear-gradient(135deg, #0a6fb5 0%, #00d4ff 100%);
-    box-shadow: 0 8px 20px rgba(0, 183, 255, 0.4);
+    background: #0056b3;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25);
     transform: translateY(-2px);
 }
 
 .button.success {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    border-color: rgba(46, 204, 113, 0.5);
-    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.25);
+    background: #28a745;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
 }
 
 .button.success:hover {
-    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
 }
 
 .button.danger {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    border-color: rgba(231, 76, 60, 0.5);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25);
+    background: #dc3545;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
 }
 
 .button.danger:hover {
-    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
 }
 
 .button:disabled {
@@ -353,11 +353,11 @@
 }
 
 .modal {
-    background-color: rgba(20, 20, 30, 0.95);
+    background-color: #ffffff;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 183, 255, 0.15);
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 123, 255, 0.05);
+    border: 1px solid #e9ecef;
     max-width: 400px;
     width: 90%;
     transform: translateY(20px);
@@ -387,7 +387,7 @@
 .modal-content {
     text-align: center;
     margin-bottom: 25px;
-    color: #e0e0e0;
+    color: #333;
     font-size: 1.1em;
     line-height: 1.6;
 }
@@ -399,7 +399,7 @@
 
 .modal-button {
     padding: 11px 30px;
-    border: 1px solid rgba(0, 183, 255, 0.5);
+    border: 1px solid #ced4da;
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.95em;
@@ -409,24 +409,24 @@
 }
 
 .modal-button.primary {
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+    background: #007bff;
     color: white;
 }
 
 .modal.success .modal-button.primary {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    border-color: rgba(46, 204, 113, 0.5);
+    background: #28a745;
+    border-color: transparent;
 }
 
 .modal.success .modal-button.primary:hover {
-    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
 }
 
 .modal.error .modal-button.primary {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-    border-color: rgba(255, 107, 107, 0.5);
+    background: #dc3545;
+    border-color: transparent;
 }
 
 .modal.error .modal-button.primary:hover {
-    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
 }

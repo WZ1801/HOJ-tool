@@ -5,7 +5,7 @@ import socket
 import random
 
 
-def get_available_port(start_port=8000, end_port=65535, exclude_ports=None):
+def get_available_port(start_port=1146, end_port=65535, exclude_ports=None):
     """
     获取一个随机可用的端口
     """

@@ -4,23 +4,208 @@
     box-sizing: border-box;
 }
 
+.statistics-control-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel-header {
+    margin-bottom: 20px;
+}
+
+.control-panel-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.cache-status-info {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+}
+
+.status-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.status-value {
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+.progress-section {
+    background: white;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.progress-header h4 {
+    margin: 0;
+    color: #333;
+}
+
+.progress-bar-container {
+    margin-top: 10px;
+}
+
+.progress-bar-background {
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #00bfff);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* 模态框样式 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .user-search-card {
-    background: rgba(20, 20, 30, 0.8);
+    background: #ffffff;
     padding: 28px;
     border-radius: 12px;
-    border: 1px solid rgba(0, 183, 255, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     margin-top: 30px;
     transition: all 0.3s ease;
 }
 
 .user-search-card:hover {
-    border-color: rgba(0, 183, 255, 0.4);
-    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+    border-color: #d6d9de;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .user-search-card h2 {
-    color: #00d4ff;
+    color: #333;
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.3em;
@@ -36,56 +221,56 @@
 
 #usernameInput {
     padding: 12px 16px;
-    border: 1px solid rgba(0, 183, 255, 0.3);
+    border: 1px solid #ced4da;
     border-radius: 6px;
     width: 250px;
     min-width: 200px;
     transition: all 0.3s ease;
-    background: rgba(10, 10, 15, 0.5);
-    color: #e0e0e0;
+    background: #f8f9fa;
+    color: #333;
     font-size: 14px;
 }
 
 #usernameInput::placeholder {
-    color: #606060;
+    color: #999;
 }
 
 #usernameInput:focus {
-    border-color: rgba(0, 183, 255, 0.6);
-    box-shadow: 0 0 12px rgba(0, 183, 255, 0.2);
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.15);
     outline: none;
 }
 
 #searchButton {
     padding: 11px 24px;
-    background: linear-gradient(135deg, #0b7ec2 0%, #00b7ff 100%);
+    background: #007bff;
     color: white;
-    border: 1px solid rgba(0, 183, 255, 0.5);
+    border: 1px solid transparent;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-width: 80px;
     font-weight: 500;
     font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
 }
 
 #searchButton:hover {
-    background: linear-gradient(135deg, #0a6fb5 0%, #00d4ff 100%);
-    box-shadow: 0 8px 20px rgba(0, 183, 255, 0.4);
+    background: #0056b3;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25);
     transform: translateY(-2px);
 }
 
 .user-specific-result {
     margin-top: 20px;
     padding: 20px;
-    background: rgba(10, 10, 15, 0.5);
+    background: #f8f9fa;
     border-radius: 8px;
-    border-left: 4px solid rgba(0, 183, 255, 0.4);
-    border: 1px solid rgba(0, 183, 255, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid #007bff;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     font-size: 0.95rem;
-    color: #a0a0a0;
+    color: #333;
 }
 
 .charts-container {
@@ -97,22 +282,22 @@
 }
 
 .chart-card {
-    background: rgba(20, 20, 30, 0.8);
-    border: 1px solid rgba(0, 183, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
 .chart-card:hover {
-    border-color: rgba(0, 183, 255, 0.4);
-    box-shadow: 0 8px 24px rgba(0, 183, 255, 0.15);
+    border-color: #d6d9de;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .chart-card h2,
 .user-charts-container h4 {
-    color: #00d4ff;
+    color: #333;
     margin-top: 0;
     margin-bottom: 16px;
     font-size: 1.1em;

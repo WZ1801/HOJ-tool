@@ -12,6 +12,50 @@
 
 <body></body>
     <main class="container">
+        <!-- 统计控制面板 -->
+        <div class="statistics-control-panel">
+            <div class="control-panel-header">
+                <h2>数据统计控制</h2>
+            </div>
+            <div class="control-panel-content">
+                <div class="cache-status-info">
+                    <div class="status-item">
+                        <span class="status-label">缓存状态：</span>
+                        <span id="cacheStatusText" class="status-value">检查中...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">最后更新：</span>
+                        <span id="lastUpdateTime" class="status-value">未知</span>
+                    </div>
+                </div>
+                
+                <div class="control-buttons">
+                    <button id="refreshStatisticsBtn" class="btn btn-primary">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新统计
+                    </button>
+                    <button id="clearCacheBtn" class="btn btn-secondary">
+                        <i class="bi bi-trash"></i> 清空缓存
+                    </button>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <h4>统计进度</h4>
+                        <span id="progressStatusText">空闲</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-background">
+                            <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progressPercentage">0%</span>
+                            <span id="progressDetails">等待开始...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="charts-container">
             <div class="chart-card">
                 <h2>用户提交量排行榜</h2>
@@ -69,6 +113,24 @@
             <p>Copyright © 2024-2025 <a href="https://gitee.com/wzokee/hoj-tool" target="_blank">HOJ Tool</a>. 仅供学习研究使用</p>
         </div>
     </footer>
+
+    <!-- 确认刷新模态框 -->
+    <div id="refreshConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>重新统计确认</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">缓存已过期或不存在，是否重新统计？</p>
+                <p class="modal-note">注意：重新统计可能需要几分钟时间。</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmRefreshBtn" class="btn btn-primary">重新统计</button>
+                <button id="cancelRefreshBtn" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/statistics/index.js"></script>
